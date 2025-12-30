@@ -1,0 +1,16 @@
+config.py
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+env/
+.env
+.venv
+Volume_HET_e_HOM_Consolidado.xlsx

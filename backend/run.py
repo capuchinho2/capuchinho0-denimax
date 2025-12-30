@@ -1,0 +1,28 @@
+import sys
+import os
+
+# Adicionar o diretório backend ao PYTHONPATH
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from flask import Flask
+from flask_cors import CORS
+from app.routes.dashboard import dashboard_bp
+from app.routes.status_prep import status_prep_bp
+from app.routes.api import api_bp
+
+def create_app():
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app", "static")
+    templates_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app", "templates")
+    app = Flask(__name__, static_folder=static_dir, template_folder=templates_dir)
+    CORS(app)
+
+    # Registrar blueprints
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(status_prep_bp)
+    app.register_blueprint(api_bp)
+
+    return app
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True, host='0.0.0.0', port=5000)

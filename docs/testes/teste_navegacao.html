@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Navegação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .secao-conteudo {
+            border: 2px solid #333;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #0066cc;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        #log {
+            background: #0a0a0a;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Navegação entre Seções</h1>
+    
+    <div style="margin: 20px 0;">
+        <button onclick="navegarPara('dashboard')">Dashboard</button>
+        <button onclick="navegarPara('producao')">Produção</button>
+        <button onclick="navegarPara('turnos')">Turnos</button>
+        <button onclick="navegarPara('equipamentos')">Equipamentos</button>
+        <button onclick="navegarPara('relatorios')">Relatórios</button>
+    </div>
+
+    <hr>
+
+    <!-- SEÇÃO: DASHBOARD -->
+    <div id="secao-dashboard" class="secao-conteudo" style="display: block;">
+        <h2>📊 Dashboard</h2>
+        <p>Esta é a seção do Dashboard</p>
+    </div>
+
+    <!-- SEÇÃO: PRODUÇÃO -->
+    <div id="secao-producao" class="secao-conteudo" style="display: none;">
+        <h2>🏭 Produção</h2>
+        <p>Esta é a seção de Produção</p>
+    </div>
+
+    <!-- SEÇÃO: TURNOS -->
+    <div id="secao-turnos" class="secao-conteudo" style="display: none;">
+        <h2>⏰ Turnos</h2>
+        <p>Esta é a seção de Turnos</p>
+    </div>
+
+    <!-- SEÇÃO: EQUIPAMENTOS -->
+    <div id="secao-equipamentos" class="secao-conteudo" style="display: none;">
+        <h2>⚙️ Equipamentos</h2>
+        <p>Esta é a seção de Equipamentos</p>
+    </div>
+
+    <!-- SEÇÃO: RELATÓRIOS -->
+    <div id="secao-relatorios" class="secao-conteudo" style="display: none;">
+        <h2>📄 Relatórios</h2>
+        <p>Esta é a seção de Relatórios</p>
+    </div>
+
+    <hr>
+
+    <div id="log"></div>
+
+    <script>
+        function log(msg) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += msg + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function navegarPara(secao) {
+            log('🔄 Navegando para: ' + secao);
+            
+            // Esconder todas as seções
+            const todasSecoes = document.querySelectorAll('.secao-conteudo');
+            log('📦 Seções encontradas: ' + todasSecoes.length);
+            
+            todasSecoes.forEach(s => {
+                s.style.display = 'none';
+                log('  ❌ Escondendo: ' + s.id);
+            });
+            
+            // Mostrar seção selecionada
+            const secaoElement = document.getElementById('secao-' + secao);
+            log('🎯 Procurando: secao-' + secao);
+            
+            if (secaoElement) {
+                secaoElement.style.display = 'block';
+                log('  ✅ Mostrando: ' + secaoElement.id);
+            } else {
+                log('  ❌ ERRO: Seção não encontrada!');
+            }
+            
+            log('✅ Navegação concluída!');
+            log('---');
+        }
+
+        // Testar automaticamente ao carregar
+        window.onload = function() {
+            log('🚀 Página carregada');
+            log('📋 Seções disponíveis:');
+            document.querySelectorAll('.secao-conteudo').forEach(s => {
+                log('  • ' + s.id + ' (display: ' + s.style.display + ')');
+            });
+            log('---');
+        };
+    </script>
+</body>
+</html>

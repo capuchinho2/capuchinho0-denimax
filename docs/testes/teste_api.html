@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1f3a;
+            color: white;
+        }
+        .resultado {
+            background: #0a0e1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        button {
+            background: #00d4ff;
+            color: #0a0e1a;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #00ff88;
+        }
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #00ff8820; border-left: 4px solid #00ff88; }
+        .error { background: #ff475720; border-left: 4px solid #ff4757; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste da API - Dashboard de Faturamento</h1>
+    
+    <div style="background: #0a0e1a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3>📅 Buscar por Período</h3>
+        <label>Data Inicial: <input type="date" id="dataInicial" style="margin-left: 10px; padding: 8px;"></label>
+        <label style="margin-left: 20px;">Data Final: <input type="date" id="dataFinal" style="margin-left: 10px; padding: 8px;"></label>
+        <button onclick="testarAPIPeriodo()" style="margin-left: 20px;">🔍 Buscar Período</button>
+    </div>
+    
+    <button onclick="testarAPIHoje()">🔄 Buscar Dados de Hoje</button>
+    
+    <div id="resultado" class="resultado"></div>
+
+    <script>
+        // Preencher com data de hoje ao carregar
+        window.onload = () => {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataInicial').value = hoje;
+            document.getElementById('dataFinal').value = hoje;
+            setTimeout(testarAPIHoje, 500);
+        };
+        
+        async function testarAPIHoje() {
+            const resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.innerHTML = '<p>⏳ Carregando dados...</p>';
+            
+            try {
+                console.log('🔄 Iniciando requisição...');
+                const response = await fetch('http://localhost:5000/api/volumes/hoje');
+                
+                console.log('📡 Status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📦 Dados:', data);
+                
+                if (data.success) {
+                    const { het, hom, consolidado } = data.data;
+                    
+                    resultadoDiv.innerHTML = `
+                        <div class="status success">✅ Dados carregados com sucesso!</div>
+                        
+                        <h3>📊 Dados HET</h3>
+                        <ul>
+                            <li>Preparado: <strong>${het.preparado.toFixed(2)} tons</strong></li>
+                            <li>Pendente: <strong>${het.pendente.toFixed(2)} tons</strong></li>
+                            <li>Total: <strong>${het.total.toFixed(2)} tons</strong></li>
+                        </ul>
+                        
+                        <h3>📊 Dados HOM</h3>
+                        <ul>
+                            <li>Preparado: <strong>${hom.preparado.toFixed(2)} tons</strong></li>
+                            <li>Pendente: <strong>${hom.pendente.toFixed(2)} tons</strong></li>
+                            <li>Total: <strong>${hom.total.toFixed(2)} tons</strong></li>
+                        </ul>
+                        
+                        <h3>📊 Consolidado</h3>
+                        <ul>
+                            <li>Total Preparado: <strong>${consolidado.preparado.toFixed(2)} tons</strong></li>
+                            <li>Total Pendente: <strong>${consolidado.pendente.toFixed(2)} tons</strong></li>
+                            <li>Total Geral: <strong>${consolidado.total.toFixed(2)} tons</strong></li>
+                        </ul>
+                        
+                        <h3>🔍 JSON Completo:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultadoDiv.innerHTML = `
+                        <div class="status error">❌ Erro: ${data.error}</div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                resultadoDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Erro ao buscar dados: ${error.message}
+                    </div>
+                    <p>Verifique se:</p>
+                    <ul>
+                        <li>O servidor Flask está rodando em http://localhost:5000</li>
+                        <li>O console do navegador (F12) para mais detalhes</li>
+                    </ul>
+                `;
+            }
+        }
+        
+        async function testarAPIPeriodo() {
+            const dataInicial = document.getElementById('dataInicial').value;
+            const dataFinal = document.getElementById('dataFinal').value;
+            
+            if (!dataInicial || !dataFinal) {
+                alert('Por favor, selecione as datas inicial e final');
+                return;
+            }
+            
+            const resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.innerHTML = '<p>⏳ Carregando dados do período...</p>';
+            
+            try {
+                const dataInicialFmt = dataInicial.replace(/-/g, '');
+                const dataFinalFmt = dataFinal.replace(/-/g, '');
+                
+                console.log('🔄 Buscando período:', dataInicialFmt, 'até', dataFinalFmt);
+                
+                const response = await fetch('http://localhost:5000/api/volumes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data_inicial: dataInicialFmt,
+                        data_final: dataFinalFmt
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const { het, hom, consolidado } = data.data;
+                    resultadoDiv.innerHTML = `
+                        <div class="status success">✅ Dados do período carregados!</div>
+                        <p><strong>Período:</strong> ${dataInicial} até ${dataFinal}</p>
+                        
+                        <h3>📊 HET: ${het.preparado.toFixed(2)} tons preparado + ${het.pendente.toFixed(2)} tons pendente</h3>
+                        <h3>📊 HOM: ${hom.preparado.toFixed(2)} tons preparado + ${hom.pendente.toFixed(2)} tons pendente</h3>
+                        <h3>📊 Total: ${consolidado.total.toFixed(2)} tons</h3>
+                        
+                        <h3>🔍 JSON:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultadoDiv.innerHTML = `<div class="status error">❌ ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultadoDiv.innerHTML = `<div class="status error">❌ ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

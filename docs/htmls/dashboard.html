@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Produção | Sistema Industrial Avançado</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-industry"></i>
+          </div>
+          <div class="logo-text">Denimax</div>
+        </div>
+        <div class="logo-subtitle" style="color: var(--text-muted); font-size: 0.8rem;">Sistema de Produção v2.1</div>
+      </div>
+      
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="#" class="nav-link active">
+              <i class="fas fa-tachometer-alt"></i>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-chart-line"></i>
+              Produção
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-users-cog"></i>
+              Turnos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-cogs"></i>
+              Equipamentos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-chart-bar"></i>
+              Relatórios
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-bell"></i>
+              Alertas
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-user-shield"></i>
+              Configurações
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-info">
+          <h1 class="header-title">Dashboard de Produção</h1>
+          <p class="header-subtitle">Monitoramento em tempo real da linha de produção</p>
+        </div>
+        <div class="datetime-display">
+          <div class="current-time" id="currentTime">--:--:--</div>
+          <div id="currentDate">-- de ---- de ----</div>
+        </div>
+      </header>
+
+      <!-- Date Filter -->
+      <div class="filtro-data">
+        <label for="data"><i class="fas fa-calendar"></i> Selecionar período:</label>
+        <input type="date" id="data" onchange="filtrarPorData(this.value)">
+      </div>
+
+      <!-- Metrics Grid -->
+      <section class="metrics-grid">
+        <!-- Card 1: Total Feito Batido -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #00ff8815, #00d4ff15); color: #00ff88;">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="metric-trend trend-up">
+              <i class="fas fa-arrow-up"></i> +5.2%
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">100</div>
+            <div class="metric-label">Total Feito Batido</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 65%"></div>
+          </div>
+        </div>
+
+        <!-- Card 2: Falta Fazer Batido -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #ffaa0015, #ff6b3515); color: #ffaa00;">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="metric-trend trend-down">
+              <i class="fas fa-arrow-down"></i> -12%
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">80</div>
+            <div class="metric-label">Falta Fazer Batido</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 35%; background: linear-gradient(90deg, #ffaa00, #ff6b35);"></div>
+          </div>
+        </div>
+
+        <!-- Card 3: HOM Baixados -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #0066cc15, #00d4ff15); color: #0066cc;">
+              <i class="fas fa-download"></i>
+            </div>
+            <div class="metric-trend trend-up">
+              <i class="fas fa-arrow-up"></i> +8.1%
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">120</div>
+            <div class="metric-label">HOM Baixados</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 75%;"></div>
+          </div>
+        </div>
+
+        <!-- Card 4: Falta Baixar -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #ff475715, #ffaa0015); color: #ff4757;">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="metric-trend trend-stable">
+              <i class="fas fa-minus"></i> 0%
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">60</div>
+            <div class="metric-label">Falta Baixar</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 40%; background: linear-gradient(90deg, #ff4757, #ffaa00);"></div>
+          </div>
+        </div>
+
+        <!-- Card 5: Volume do Dia -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #00d4ff15, #0066cc15); color: #00d4ff;">
+              <i class="fas fa-cube"></i>
+            </div>
+            <div class="metric-trend trend-up">
+              <i class="fas fa-arrow-up"></i> +15%
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">40</div>
+            <div class="metric-label">Volume do Dia</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 25%;"></div>
+          </div>
+        </div>
+
+        <!-- Card 6: Total HET + HOM -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #00ff8815, #0066cc15); color: #00ff88;">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="metric-trend trend-up">
+              <i class="fas fa-arrow-up"></i> +7.3%
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">180</div>
+            <div class="metric-label">Feito HET + HOM</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 85%;"></div>
+          </div>
+        </div>
+
+        <!-- Card 7: Falta HET + HOM -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #ffaa0015, #ff6b3515); color: #ffaa00;">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="metric-trend trend-down">
+              <i class="fas fa-arrow-down"></i> -3%
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">90</div>
+            <div class="metric-label">Falta HET + HOM</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 45%; background: linear-gradient(90deg, #ffaa00, #ff6b35);"></div>
+          </div>
+        </div>
+
+        <!-- Card 8: Meta do Dia -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #ff6b3515, #ffaa0015); color: #ff6b35;">
+              <i class="fas fa-target"></i>
+            </div>
+            <div class="metric-trend trend-stable">
+              <i class="fas fa-equals"></i> Meta
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">500</div>
+            <div class="metric-label">Meta do Dia</div>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar" style="width: 100%; background: linear-gradient(90deg, #ff6b35, #ffaa00);"></div>
+          </div>
+        </div>
+
+        <!-- Card 9: Tempo Estimado -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #0066cc15, #00d4ff15); color: #0066cc;">
+              <i class="fas fa-stopwatch"></i>
+            </div>
+            <div class="metric-trend trend-stable">
+              <i class="fas fa-clock"></i> ETA
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value" id="tempoRestante">--</div>
+            <div class="metric-label">Tempo para Finalizar</div>
+          </div>
+        </div>
+
+        <!-- Card 10: Status Geral -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #00ff8815, #00d4ff15); color: #00ff88;">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="status-indicator status-success" id="statusIndicator">
+              <i class="fas fa-circle"></i>
+              <span>Ativo</span>
+            </div>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value" style="font-size: 2rem;">STATUS</div>
+            <div class="metric-label" id="mensagemAlerta">Sistema Operacional</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts Section -->
+      <section class="grafico-container">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <i class="fas fa-chart-bar"></i>
+            Resumo da Produção
+          </h2>
+          <div class="chart-controls">
+            <button class="chart-control-btn active">Diário</button>
+            <button class="chart-control-btn">Semanal</button>
+            <button class="chart-control-btn">Mensal</button>
+          </div>
+        </div>
+        <canvas id="graficoResumo" style="height: 400px;"></canvas>
+      </section>
+
+      <section class="grafico-container">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <i class="fas fa-users"></i>
+            Produtividade por Turno
+          </h2>
+          <div class="chart-controls">
+            <button class="chart-control-btn active">Hoje</button>
+            <button class="chart-control-btn">Ontem</button>
+            <button class="chart-control-btn">Média</button>
+          </div>
+        </div>
+        <canvas id="graficoTurnos" style="height: 400px;"></canvas>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

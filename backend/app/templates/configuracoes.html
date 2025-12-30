@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon"><i class="fas fa-industry"></i></div>
+                    <div class="logo-text">Denimax</div>
+                </div>
+                <div class="logo-subtitle" style="color: var(--text-muted); font-size: 0.8rem;">Sistema de Produção v2.1</div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="/" class="nav-link"><i class="fas fa-home"></i>Início</a></li>
+                    <li class="nav-item"><a href="/preparacao" class="nav-link"><i class="fas fa-box-open"></i>Preparação</a></li>
+                    <li class="nav-item"><a href="/conferencia" class="nav-link"><i class="fas fa-clipboard-check"></i>Conferência</a></li>
+                    <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+                    <li class="nav-item"><a href="/status-prep" class="nav-link"><i class="fas fa-clipboard-list"></i>STATUS_PREP</a></li>
+                    <li class="nav-item"><a href="/rastreabilidade" class="nav-link"><i class="fas fa-search-location"></i>Rastreabilidade</a></li>
+                    <li class="nav-item"><a href="/configuracoes" class="nav-link active"><i class="fas fa-cogs"></i>Configurações</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1 style="margin-bottom:2rem;">Configurações</h1>
+            <div class="metric-card" style="margin-top: 0.9rem; margin-bottom: 1.5rem;">
+                <div class="card-header" style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--text-primary); font-size: 1.2rem; font-weight: 600;">
+                        <i class="fas fa-cogs"></i> Área de Configurações
+                    </h3>
+                </div>
+                <div>
+                    <ul style="list-style:none; padding:0;">
+                        <li><a href="#" class="submenu-link" style="color:#1e88e5; font-weight:600;"><i class="fas fa-user-cog"></i> Usuários</a></li>
+                        <br>
+                        <li><a href="#" class="submenu-link" style="color:#1e88e5; font-weight:600;"><i class="fas fa-database"></i> Caches</a></li>
+                    </ul>
+                </div>
+                <div id="config-content" style="margin-top:2rem;"></div>
+            </div>
+        </main>
+    </div>
+    <script>
+        // Exemplo de submenus dinâmicos
+        document.querySelectorAll('.submenu-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (this.innerText.trim().toLowerCase() === 'caches') {
+                    document.getElementById('config-content').innerHTML = `
+                        <h4>Caches</h4>
+                        <div style="margin-top:2rem; display:flex; gap:1rem;">
+                            <button id="btn-limpar-cache-paletes" class="btn btn-warning" style="padding:12px 24px;font-weight:600;">
+                                <i class="fas fa-broom"></i> Limpar cache_paletes
+                            </button>
+                            <button id="btn-limpar-cash-plts" class="btn btn-warning" style="padding:12px 24px;font-weight:600;">
+                                <i class="fas fa-broom"></i> Limpar cash_plts
+                            </button>
+                        </div>
+                        <div id="msg-limpeza" style="margin-top:1rem;"></div>
+                    `;
+                    document.getElementById('btn-limpar-cache-paletes').onclick = function() {
+                        fetch('/configuracoes/limpar-cache-paletes', {method:'POST'})
+                            .then(r=>r.json()).then(d=>{
+                                document.getElementById('msg-limpeza').textContent = d.message;
+                            });
+                    };
+                    document.getElementById('btn-limpar-cash-plts').onclick = function() {
+                        fetch('/configuracoes/limpar-cash-plts', {method:'POST'})
+                            .then(r=>r.json()).then(d=>{
+                                document.getElementById('msg-limpeza').textContent = d.message;
+                            });
+                    };
+                } else {
+                    document.getElementById('config-content').innerHTML = `<h4>${this.innerText}</h4><p>Conteúdo de configuração para <b>${this.innerText}</b> aqui.</p>`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

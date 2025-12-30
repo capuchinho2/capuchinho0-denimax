@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Preparação | Sistema Industrial Avançado</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+	<div class="dashboard-container">
+		<!-- Sidebar -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<div class="logo">
+					<div class="logo-icon">
+						<i class="fas fa-industry"></i>
+					</div>
+					<div class="logo-text">Denimax</div>
+				</div>
+				<div class="logo-subtitle" style="color: var(--text-muted); font-size: 0.8rem;">Sistema de Produção v2.1</div>
+			</div>
+			<nav>
+				<ul class="nav-menu">
+					<li class="nav-item">
+						<a href="/" class="nav-link">
+							<i class="fas fa-home"></i>
+							Início
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/preparacao" class="nav-link active">
+							<i class="fas fa-box-open"></i>
+							Preparação
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/conferencia" class="nav-link">
+							<i class="fas fa-clipboard-check"></i>
+							Conferência
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/dashboard" class="nav-link">
+							<i class="fas fa-tachometer-alt"></i>
+							Dashboard
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/status-prep" class="nav-link">
+							<i class="fas fa-clipboard-list"></i>
+							STATUS_PREP
+						</a>
+					</li>
+					   <li class="nav-item">
+						   <a href="/rastreabilidade" class="nav-link">
+							   <i class="fas fa-search-location"></i>
+							   Rastreabilidade
+						   </a>
+					   </li>
+					   <li class="nav-item">
+						   <a href="/configuracoes" class="nav-link">
+							   <i class="fas fa-cogs"></i>
+							   Configurações
+						   </a>
+					   </li>
+				</ul>
+			</nav>
+		</aside>
+		<!-- Main Content -->
+		<main class="main-content">
+			<header class="header">
+				<div class="header-info">
+					<h1 class="header-title">Painel de Preparação</h1>
+					<p class="header-subtitle">Digite a viagem para iniciar a preparação</p>
+				</div>
+				<div class="datetime-display">
+					<div class="current-time" id="currentTime">--:--:--</div>
+					<div class="current-date" id="currentDate">--/--/----</div>
+				</div>
+			</header>
+			<!-- Card de Busca de Viagem -->
+			<div class="metric-card" style="margin-top: 0.9rem;">
+				<div class="card-header" style="margin-bottom: 1.5rem;">
+					<h3 style="color: var(--text-primary); font-size: 1.2rem; font-weight: 600;">
+						<i class="fas fa-truck"></i> Buscar Viagem
+					</h3>
+				</div>
+				<div style="display: flex; gap: 1rem; align-items: center;">
+					<div style="flex: 1;">
+						<label style="display: block; color: var(--text-secondary); margin-bottom: 0.5rem; font-size: 0.9rem;">
+							<i class="fas fa-barcode"></i> Número da Viagem:
+						</label>
+						<input type="text" id="numeroViagem" placeholder="Digite o número da viagem" 
+									 style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); 
+													background: var(--dark-bg); color: var(--text-primary); font-size: 1rem;">
+					</div>
+					<button id="btnBuscarViagem" 
+									style="padding: 12px 32px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); 
+												 color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; 
+												 margin-top: 1.5rem; transition: all 0.3s ease;">
+						<i class="fas fa-search"></i> Buscar
+					</button>
+				</div>
+			</div>
+			<!-- Tabela de Resultados -->
+			<div id="tabelaResultados" style="display: none; margin-top: 2rem;">
+				<div class="metric-card">
+					<h3 style="color: var(--text-primary); font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem;">
+						Status dos Paletes
+					</h3>
+					<div style="overflow-x: auto;">
+						<style>
+							/* Alinhamento das barras de progresso e texto */
+							.progress-bar-container {
+								display: inline-block;
+								width: 138px;
+								vertical-align: middle;
+								margin-left: 0;
+							}
+							.progress-bar-text {
+								margin-left: 8px;
+								display: inline-block;
+								min-width: 38px;
+								text-align: left;
+								vertical-align: middle;
+							}
+							/* Alinhamento dos ícones de status e barra de progresso igual site antigo */
+							.tabela-preparacao td {
+								vertical-align: middle;
+								text-align: center;
+								white-space: nowrap;
+							}
+							.tabela-preparacao td img {
+								display: inline-block;
+								vertical-align: middle;
+								margin: 0;
+								padding: 0;
+							}
+							.tabela-preparacao td.barra-prep {
+								padding-left: 12px;
+								padding-right: 0;
+								text-align: left;
+							}
+							.tabela-preparacao {
+								width: 100%;
+								border-collapse: separate;
+								border-spacing: 0;
+								background: var(--card-bg);
+								border-radius: 12px;
+								overflow: hidden;
+								box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+							}
+							.tabela-preparacao th, .tabela-preparacao td {
+								padding: 12px 8px;
+								text-align: center;
+								border-bottom: 1px solid #232b3b;
+							}
+							.tabela-preparacao th {
+								background: #1e2536;
+								color: #fff;
+								font-weight: 700;
+								font-size: 1rem;
+								letter-spacing: 0.02em;
+								border-right: 1px solid #232b3b;
+							}
+							.tabela-preparacao th:last-child, .tabela-preparacao td:last-child {
+								border-right: none;
+							}
+							.tabela-preparacao tr:last-child td {
+								border-bottom: none;
+							}
+							.tabela-preparacao tbody tr:hover {
+								background: #232b3b;
+								transition: background 0.2s;
+							}
+						</style>
+						<table class="tabela-preparacao">
+						<thead>
+						<tr style="background: #d3e4f5; color: #000;">
+							<th>Onda</th>
+							<th>Viagem</th>
+							<th>Palete</th>
+							<th>Frota</th>
+							<th>Tipo</th>
+							<th>Status</th>
+							<th>Peso</th>
+							<th>Qtd. Lida</th>
+							<th>Total Caixas</th>
+							<th>% Preparação</th>
+							<th>Carregador</th>
+							<th>Preparador</th>
+							<th>Nome</th>
+						</tr>
+						</thead>
+						<tbody id="corpoTabela">
+						<!-- Linhas serão inseridas aqui dinamicamente -->
+						</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- Área de Detalhamento -->
+				<div id="areaDetalhamento" style="display: none; margin-top: 1.5rem;">
+					<div class="metric-card">
+						<h3 style="color: var(--text-primary); font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;" id="tituloDetalhamento">
+							Detalhamento do Palete
+						</h3>
+						<div style="overflow-x: auto;">
+							<table style="width: 100%; border-collapse: collapse; background: var(--card-bg);">
+								<thead>
+									<tr style="background: #f0f0f0; color: #000;">
+										<th style="padding: 10px; text-align: center; border: 1px solid #999; font-weight: 600;">Código</th>
+										<th style="padding: 10px; text-align: center; border: 1px solid #999; font-weight: 600;">Descrição</th>
+										<th style="padding: 10px; text-align: center; border: 1px solid #999; font-weight: 600;">Qtde</th>
+										<th style="padding: 10px; text-align: center; border: 1px solid #999; font-weight: 600;">Status</th>
+									</tr>
+								</thead>
+								<tbody id="corpoDetalhamento">
+									<!-- Detalhes serão inseridos aqui -->
+								</tbody>
+							</table>
+						</div>
+						<div id="resumoFaltas" style="margin-top: 1rem; color: #d9534f; font-weight: 600;"></div>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+	<script>
+		// Atualizar data e hora
+		function atualizarDataHora() {
+			const agora = new Date();
+			const horas = String(agora.getHours()).padStart(2, '0');
+			const minutos = String(agora.getMinutes()).padStart(2, '0');
+			const segundos = String(agora.getSeconds()).padStart(2, '0');
+			document.getElementById('currentTime').textContent = `${horas}:${minutos}:${segundos}`;
+			const dia = String(agora.getDate()).padStart(2, '0');
+			const mes = String(agora.getMonth() + 1).padStart(2, '0');
+			const ano = agora.getFullYear();
+			document.getElementById('currentDate').textContent = `${dia}/${mes}/${ano}`;
+		}
+		atualizarDataHora();
+		setInterval(atualizarDataHora, 1000);
+		// Buscar dados da viagem
+		async function buscarViagem() {
+			const numeroViagem = document.getElementById('numeroViagem').value.trim();
+			const btn = document.getElementById('btnBuscarViagem');
+			if (!numeroViagem) {
+				alert('Por favor, digite o número da viagem.');
+				return;
+			}
+			// Desabilitar botão e mostrar loading
+			btn.disabled = true;
+			btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+			try {
+				const response = await fetch(`/api/preparacao/lista?viagem=${numeroViagem}`);
+				const data = await response.json();
+				if (data.success) {
+					exibirTabela(data);
+				} else {
+					alert(`Erro: ${data.error}`);
+					document.getElementById('tabelaResultados').style.display = 'none';
+				}
+			} catch (error) {
+				alert('Erro ao buscar viagem. Verifique a conexão.');
+				document.getElementById('tabelaResultados').style.display = 'none';
+			} finally {
+				btn.disabled = false;
+				btn.innerHTML = '<i class="fas fa-search"></i> Buscar';
+			}
+		}
+		// Exibir tabela de resultados
+		function exibirTabela(data) {
+			const tabelaResultados = document.getElementById('tabelaResultados');
+			const corpoTabela = document.getElementById('corpoTabela');
+			corpoTabela.innerHTML = '';
+			document.getElementById('areaDetalhamento').style.display = 'none';
+			const lista = data.dados || data.paletes || [];
+			if (lista.length > 0) {
+				lista.forEach((item) => {
+					const row = document.createElement('tr');
+					row.innerHTML = `
+						<td>${item.ONDA ?? ''}</td>
+						<td>${item.VIAGEM ?? ''}</td>
+						<td>${item.PALETE ?? ''}</td>
+						<td>${item.FROTA ?? ''}</td>
+						<td>${item.TIPO ?? ''}</td>
+						<td>${item.C ?? ''}</td>
+						<td>${item.PESO ?? ''}</td>
+						<td>${item.QTDLIDA ?? ''}</td>
+						<td>${item.RCAIXAS ?? ''}</td>
+						<td class="barra-prep"></td>
+						<td>${item.CARREGADOR ?? ''}</td>
+						<td>${item.PREPARADOR ?? ''}</td>
+						<td>${item.NOME ?? ''}</td>
+					`;
+					// Insere o HTML da barra de progresso como innerHTML
+					row.querySelector('.barra-prep').innerHTML = item.PERC_PREP ?? '';
+					corpoTabela.appendChild(row);
+				});
+			} else {
+				corpoTabela.innerHTML = `
+					<tr>
+						<td colspan="13" style="padding: 20px; text-align: center; color: var(--text-secondary);">
+							Nenhum registro encontrado
+						</td>
+					</tr>
+				`;
+			}
+			tabelaResultados.style.display = 'block';
+			setTimeout(() => {
+				tabelaResultados.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}, 100);
+		}
+		// Detalhar palete - busca dados reais da API
+		async function detalharPalete(numeroPalete, palete) {
+			const areaDetalhamento = document.getElementById('areaDetalhamento');
+			const tituloDetalhamento = document.getElementById('tituloDetalhamento');
+			const corpoDetalhamento = document.getElementById('corpoDetalhamento');
+			const resumoFaltas = document.getElementById('resumoFaltas');
+			const numeroViagem = document.getElementById('numeroViagem').value.trim();
+			tituloDetalhamento.textContent = `Detalhamento do Palete ${numeroPalete}`;
+			corpoDetalhamento.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
+			areaDetalhamento.style.display = 'block';
+			try {
+				const response = await fetch('/api/conferencia/detalhar', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ viagem: numeroViagem, palete: numeroPalete })
+				});
+				const data = await response.json();
+				if (!data.success) {
+					corpoDetalhamento.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #d9534f;">❌ ${data.error || 'Erro ao carregar detalhes'}</td></tr>`;
+					resumoFaltas.textContent = '';
+					return;
+				}
+				if (data.mensagem) {
+					corpoDetalhamento.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #28a745;">${data.mensagem}</td></tr>`;
+					resumoFaltas.textContent = '';
+					return;
+				}
+				corpoDetalhamento.innerHTML = '';
+				if (data.itens && data.itens.length > 0) {
+					data.itens.forEach(item => {
+						const isFalta = item.status.includes('FALTA');
+						const bgColor = isFalta ? '#f8d7da' : '#ffffff';
+						const row = document.createElement('tr');
+						row.style.background = bgColor;
+						row.innerHTML = `
+							<td style="padding: 8px; text-align: center; border: 1px solid #999; color: #000;">${item.codigo}</td>
+							<td style="padding: 8px; text-align: left; border: 1px solid #999; color: #000;">${item.descricao}</td>
+							<td style="padding: 8px; text-align: center; border: 1px solid #999; color: #000;">${item.qtde}</td>
+							<td style="padding: 8px; text-align: center; border: 1px solid #999; color: ${isFalta ? '#d9534f' : '#28a745'}; font-weight: 600;">${item.status}</td>
+						`;
+						corpoDetalhamento.appendChild(row);
+					});
+					resumoFaltas.textContent = `Faltam bipar: ${data.faltam_bipar}, Faltam conferir: ${data.faltam_conferir}`;
+				} else {
+					corpoDetalhamento.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: var(--text-secondary);">Sem detalhes disponíveis</td></tr>`;
+					resumoFaltas.textContent = '';
+				}
+				setTimeout(() => {
+					areaDetalhamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}, 100);
+			} catch (error) {
+				corpoDetalhamento.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #d9534f;">❌ Erro ao carregar detalhes</td></tr>`;
+				resumoFaltas.textContent = '';
+			}
+		}
+		// Atualizar palete - força nova busca ignorando cache temporariamente
+		async function atualizarPalete(numeroPalete) {
+			const numeroViagem = document.getElementById('numeroViagem').value.trim();
+			try {
+				const response = await fetch('/api/conferencia/atualizar-palete', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ viagem: numeroViagem, palete: numeroPalete })
+				});
+				const data = await response.json();
+				if (data.success) {
+					alert(`✅ Palete atualizado com sucesso!`);
+					buscarViagem();
+				} else {
+					alert(`❌ Erro: ${data.error}`);
+				}
+			} catch (error) {
+				alert('❌ Erro ao atualizar palete');
+			}
+		}
+		document.getElementById('btnBuscarViagem').addEventListener('click', buscarViagem);
+		document.getElementById('numeroViagem').addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') {
+				buscarViagem();
+			}
+		});
+	</script>
+</body>
+</html>

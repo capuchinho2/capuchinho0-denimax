@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Dashboard</title>
+    <style>
+        body {
+            background: #0a0e1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-card {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #00d4ff;
+            text-align: center;
+        }
+        
+        .test-value {
+            font-size: 2rem;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: #00d4ff;">Teste Dashboard - 3 Colunas</h1>
+    
+    <div class="test-grid">
+        <div class="test-card">
+            <div class="test-value">100</div>
+            <div>Card 1</div>
+        </div>
+        <div class="test-card">
+            <div class="test-value">200</div>
+            <div>Card 2</div>
+        </div>
+        <div class="test-card">
+            <div class="test-value">300</div>
+            <div>Card 3</div>
+        </div>
+        <div class="test-card">
+            <div class="test-value">400</div>
+            <div>Card 4</div>
+        </div>
+        <div class="test-card">
+            <div class="test-value">500</div>
+            <div>Card 5</div>
+        </div>
+        <div class="test-card">
+            <div class="test-value">600</div>
+            <div>Card 6</div>
+        </div>
+    </div>
+</body>
+</html>

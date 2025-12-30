@@ -1,0 +1,456 @@
+</main>
+<!-- Garantir que o JS global está disponível -->
+<script src="/static/js/main.js"></script>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status de Preparação | Sistema Industrial Avançado</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-industry"></i>
+          </div>
+          <div class="logo-text">Denimax</div>
+        </div>
+        <div class="logo-subtitle" style="color: var(--text-muted); font-size: 0.8rem;">Sistema de Produção v2.1</div>
+      </div>
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="/" class="nav-link">
+              <i class="fas fa-home"></i>
+              Início
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/preparacao" class="nav-link">
+              <i class="fas fa-box-open"></i>
+              Preparação
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/conferencia" class="nav-link">
+              <i class="fas fa-clipboard-check"></i>
+              Conferência
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/dashboard" class="nav-link">
+              <i class="fas fa-tachometer-alt"></i>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/status-prep" class="nav-link active">
+              <i class="fas fa-clipboard-list"></i>
+              STATUS_PREP
+            </a>
+          </li>
+             <li class="nav-item">
+               <a href="/rastreabilidade" class="nav-link">
+                 <i class="fas fa-search-location"></i>
+                 Rastreabilidade
+               </a>
+             </li>
+             <li class="nav-item">
+               <a href="/configuracoes" class="nav-link">
+                 <i class="fas fa-cogs"></i>
+                 Configurações
+               </a>
+             </li>
+        </ul>
+      </nav>
+    </aside>
+    <!-- Main Content -->
+    <main class="main-content status-prep">
+      <header class="header" id="header-status-prep">
+        <div class="header-info">
+          <h1 class="header-title">Status de Preparação</h1>
+          <p class="header-subtitle">Acompanhamento dos preparadores e pendências</p>
+        </div>
+        <div class="datetime-display">
+          <div class="current-time" id="currentTime">--:--:--</div>
+          <div class="current-date" id="currentDate">--/--/----</div>
+        </div>
+      </header>
+      <div class="metric-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <label style="color: var(--text-primary);">
+            <i class="fas fa-calendar"></i> Período:
+          </label>
+          <input type="date" id="dataInicialPrep" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary);">
+          <span style="color: var(--text-secondary);">até</span>
+          <input type="date" id="dataFinalPrep" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary);">
+          <button onclick="preencherDataHoje()" style="padding: 8px 16px; background: #00FF88; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-calendar-day"></i> Hoje
+          </button>
+          <label style="color: var(--text-primary); margin-left: 1rem;">
+            <i class="fas fa-user"></i> Preparador:
+          </label>
+          <input type="text" id="nomePreparador" placeholder="Digite o CDP do usuario" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary); min-width: 180px;">
+          <button id="btnBuscar" onclick="buscarDados();" style="padding: 8px 20px; background: var(--primary-color); border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+      </div>
+      <!-- Cards de Resumo -->
+      <section class="cards-resumo-container">
+          <div class="metric-status">
+            <div class="metric-header">
+              <div class="metric-icon" style="background: linear-gradient(135deg, #00ff8815, #00d4ff15); color: #00ff88;">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div class="metric-content">
+              <div class="metric-value" id="totalPreparados">0</div>
+              <div class="metric-label">Preparados</div>
+            </div>
+          </div>
+          
+          <div class="metric-status">
+            <div class="metric-header">
+              <div class="metric-icon" style="background: linear-gradient(135deg, #ff880015, #ffaa0015); color: #ffaa00;">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+            </div>
+            <div class="metric-content">
+              <div class="metric-value" id="totalIncompletos">0</div>
+              <div class="metric-label">Incompletos</div>
+            </div>
+          </div>
+      </section>
+</body>
+</html>
+      <div class="metric-card status_prep_Busca_data">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="color: var(--text-primary); margin: 0;">
+            <i class="fas fa-truck"></i> Viagens Pendentes
+          </h3>
+          <button id="toggleTabelaPendentes" onclick="toggleTabelaPendentes()" style="
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          ">
+            <i class="fas fa-eye"></i>
+            <span id="textoBotaoToggle">Mostrar</span>
+          </button>
+        </div>
+        <!-- Resumo de paletes -->
+        <div id="resumoPaletes" style="
+          display: flex;
+          gap: 1.5rem;
+          margin-bottom: 1rem;
+          padding: 1rem;
+          background: rgba(26, 31, 58, 0.5);
+          border-radius: 10px;
+          border: 1px solid rgba(0, 212, 255, 0.2);
+        ">
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--danger-color);">
+              <span id="paletesNaoLidos">0</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
+              <i class="fas fa-exclamation-triangle"></i> Paletes não lidos 
+            </div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--success-color);">
+              <span id="paletesLidos">0</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
+              <i class="fas fa-check-circle"></i> Paletes com leitura 
+            </div>
+          </div>
+        </div>
+        <div id="containerTabelaPendentes" style="overflow-x: auto; display: none;">
+          <table id="tabelaViagensPendentes" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--dark-bg); border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Viagem</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Palete</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Prep</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Lido</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Total</th>
+              </tr>
+            </thead>
+            <tbody id="corpoTabelaPendentes">
+              <tr>
+                <td colspan="5" style="padding: 20px; text-align: center; color: var(--text-secondary);">Selecione um período para visualizar</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Card de Paletes Preparados -->
+      <div class="metric-card status_prep_Busca_data" style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="color: var(--text-primary); margin: 0;">
+            <i class="fas fa-check-circle"></i> Paletes Preparados
+          </h3>
+        </div>
+        <div id="resumoPaletesPreparados" style="
+          display: flex;
+          gap: 1.5rem;
+          margin-bottom: 1rem;
+          padding: 1rem;
+          background: rgba(0, 255, 136, 0.08);
+          border-radius: 10px;
+          border: 1px solid rgba(0, 255, 136, 0.2);
+        ">
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--success-color);">
+              <span id="paletesPreparados">0</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
+              <i class="fas fa-check-circle"></i> Paletes preparados
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 0.5rem;">
+          <button id="toggleTabelaPreparados" onclick="toggleTabelaPreparados()" style="
+            background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;">
+            <i class="fas fa-eye"></i>
+            <span id="textoBotaoTogglePreparados">Mostrar</span>
+          </button>
+        </div>
+        <div id="containerTabelaPreparados" style="overflow-x: auto; display: none;">
+          <table id="tabelaPaletesPreparados" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--dark-bg); border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Viagem</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Palete</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Prep</th>
+              </tr>
+            </thead>
+            <tbody id="corpoTabelaPreparados">
+              <tr>
+                <td colspan="2" style="padding: 20px; text-align: center; color: var(--text-secondary);">Selecione um período para visualizar</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+    <script>
+function preencherDataHoje() {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  const dataFormatada = `${ano}-${mes}-${dia}`;
+  document.getElementById('dataInicialPrep').value = dataFormatada;
+  document.getElementById('dataFinalPrep').value = dataFormatada;
+}
+
+      function toggleTabelaPendentes() {
+        const container = document.getElementById('containerTabelaPendentes');
+        const botao = document.getElementById('toggleTabelaPendentes');
+        const texto = document.getElementById('textoBotaoToggle');
+        const icone = botao.querySelector('i');
+        
+        if (container.style.display === 'none') {
+          container.style.display = 'block';
+          texto.textContent = 'Ocultar';
+          icone.className = 'fas fa-eye-slash';
+        } else {
+          container.style.display = 'none';
+          texto.textContent = 'Mostrar';
+          icone.className = 'fas fa-eye';
+        }
+      }
+
+      function toggleTabelaPreparados() {
+        const container = document.getElementById('containerTabelaPreparados');
+        const botao = document.getElementById('toggleTabelaPreparados');
+        const texto = document.getElementById('textoBotaoTogglePreparados');
+        const icone = botao.querySelector('i');
+        if (container.style.display === 'none') {
+          container.style.display = 'block';
+          texto.textContent = 'Ocultar';
+          icone.className = 'fas fa-eye-slash';
+        } else {
+          container.style.display = 'none';
+          texto.textContent = 'Mostrar';
+          icone.className = 'fas fa-eye';
+        }
+      }
+
+      async function buscarDados() {
+                // Preencher tabela de preparados imediatamente após buscar
+                const tbodyPreparados = document.getElementById('corpoTabelaPreparados');
+                tbodyPreparados.innerHTML = '';
+                if (window.ultimosPreparados && window.ultimosPreparados.length > 0) {
+                  window.ultimosPreparados.forEach(palete => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--border-color)';
+                    tr.innerHTML = `
+                      <td style="padding: 12px; color: var(--text-primary);">${palete.palete}</td>
+                      <td style="padding: 12px; color: var(--text-primary);">${palete.prep}</td>
+                    `;
+                    tbodyPreparados.appendChild(tr);
+                  });
+                } else {
+                  tbodyPreparados.innerHTML = '<tr><td colspan="2" style="padding: 20px; text-align: center; color: var(--text-secondary);">Nenhum palete preparado encontrado</td></tr>';
+                }
+        const dataInicial = document.getElementById('dataInicialPrep').value;
+        const dataFinal = document.getElementById('dataFinalPrep').value;
+        const preparador = document.getElementById('nomePreparador').value;
+        const btnBuscar = document.getElementById('btnBuscar');
+
+        if (!dataInicial || !dataFinal) {
+          alert('Por favor, selecione as datas inicial e final.');
+          return;
+        }
+
+          // Desabilitar botão durante busca
+        btnBuscar.disabled = true;
+        btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+
+        try {
+          const url = `/api/status-prep?dataInicial=${dataInicial}&dataFinal=${dataFinal}${preparador ? '&preparador=' + encodeURIComponent(preparador) : ''}`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            // Atualizar totais
+            document.getElementById('totalPreparados').textContent = data.preparados || 0;
+            document.getElementById('totalIncompletos').textContent = data.incompletos || 0;
+              document.getElementById('paletesPreparados').textContent = data.preparados || 0; // Sincronizar com paletes preparados
+            if (preparador) {
+              window.ultimosPreparados = Array.isArray(data.viagens_preparadas) ? data.viagens_preparadas : [];
+            } else {
+              window.ultimosPreparados = [];
+            }
+
+            // Atualizar tabela de viagens pendentes
+            const tbody = document.getElementById('corpoTabelaPendentes');
+            tbody.innerHTML = '';
+
+            if (data.viagens_pendentes && data.viagens_pendentes.length > 0) {
+              let paletesNaoLidos = 0;
+              let paletesLidos = 0;
+
+              data.viagens_pendentes.forEach(viagem => {
+                // Contar paletes por valor de "lido"
+                const valorLido = parseInt(viagem.lido) || 0;
+                if (valorLido === 0) {
+                  paletesNaoLidos++;
+                } else {
+                  paletesLidos++;
+                }
+
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--border-color)';
+                tr.innerHTML = `
+                  <td style="padding: 12px; color: var(--text-primary);">${viagem.viagem}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${viagem.palete}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${viagem.prep}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${viagem.lido}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${viagem.total}</td>
+                `;
+                tbody.appendChild(tr);
+              });
+
+              // Atualizar resumo de paletes
+              document.getElementById('paletesNaoLidos').textContent = paletesNaoLidos;
+              document.getElementById('paletesLidos').textContent = paletesLidos;
+            } else {
+              tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-secondary);">Nenhuma viagem pendente encontrada</td></tr>';
+              // Zerar contadores
+              document.getElementById('paletesNaoLidos').textContent = 0;
+              document.getElementById('paletesLidos').textContent = 0;
+            }
+
+            // Ocultar a tabela após atualizar os dados
+            const container = document.getElementById('containerTabelaPendentes');
+            const botao = document.getElementById('toggleTabelaPendentes');
+            const texto = document.getElementById('textoBotaoToggle');
+            const icone = botao.querySelector('i');
+            
+            container.style.display = 'none';
+            texto.textContent = 'Mostrar';
+            icone.className = 'fas fa-eye';
+          } else {
+            alert('Erro ao buscar dados: ' + (data.error || 'Erro desconhecido'));
+          }
+        } catch (error) {
+          console.error('Erro:', error);
+          alert('Erro ao buscar dados. Verifique o console para mais detalhes.');
+        } finally {
+          // Reabilitar botão
+          btnBuscar.disabled = false;
+          btnBuscar.innerHTML = '<i class="fas fa-search"></i> Buscar';
+        }
+      }
+
+      // Função para atualizar data e hora
+      function updateDateTime() {
+        const now = new Date();
+        // Atualizar hora
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+        // Atualizar data
+        const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        const dayName = days[now.getDay()];
+        const day = now.getDate();
+        const month = months[now.getMonth()];
+        const year = now.getFullYear();
+        document.getElementById('currentDate').textContent = `${day} de ${month} de ${year}`;
+      }
+
+      // Atualizar a cada segundo
+      setInterval(updateDateTime, 1000);
+      updateDateTime(); // Atualizar imediatamente ao carregar
+
+      // Adicionar evento de Enter nos campos de input
+      document.addEventListener('DOMContentLoaded', function() {
+        const dataInicialPrep = document.getElementById('dataInicialPrep');
+        const dataFinalPrep = document.getElementById('dataFinalPrep');
+        const nomePreparador = document.getElementById('nomePreparador');
+
+        // Função para executar busca ao pressionar Enter
+        function handleEnterKey(event) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            buscarDados();
+          }
+        }
+
+        // Adicionar evento de Enter em todos os campos de input
+        dataInicialPrep.addEventListener('keypress', handleEnterKey);
+        dataFinalPrep.addEventListener('keypress', handleEnterKey);
+        nomePreparador.addEventListener('keypress', handleEnterKey);
+      });
+    </script>

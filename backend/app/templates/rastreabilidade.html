@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Rastreabilidade de Viagens</title>
+	<link rel="stylesheet" href="/static/css/main.css">
+	<style>
+		   .sim-verde { background: #d4edda; color: #155724; font-weight: bold; }
+		   .nao-vermelho { background: #f8d7da; color: #721c24; font-weight: bold; }
+		   .em-preparacao {
+			   background: #eed06c;
+			   color: #e67e22 !important;
+			   font-weight: bold;
+		   }
+	</style>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+	<div class="dashboard-container">
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<div class="logo">
+					<div class="logo-icon"><i class="fas fa-industry"></i></div>
+					<div class="logo-text">Denimax</div>
+				</div>
+				<div class="logo-subtitle" style="color: var(--text-muted); font-size: 0.8rem;">Sistema de Produção v2.1</div>
+			</div>
+			<nav>
+				<ul class="nav-menu">
+					<li class="nav-item">
+						<a href="/" class="nav-link"><i class="fas fa-home"></i>Início</a>
+					</li>
+					<li class="nav-item">
+						<a href="/preparacao" class="nav-link"><i class="fas fa-box-open"></i>Preparação</a>
+					</li>
+					<li class="nav-item">
+						<a href="/conferencia" class="nav-link"><i class="fas fa-clipboard-check"></i>Conferência</a>
+					</li>
+					<li class="nav-item">
+						<a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+					</li>
+					<li class="nav-item">
+						<a href="/status-prep" class="nav-link"><i class="fas fa-clipboard-list"></i>STATUS_PREP</a>
+					</li>
+					   <li class="nav-item">
+						   <a href="/rastreabilidade" class="nav-link active"><i class="fas fa-search-location"></i>Rastreabilidade</a>
+					   </li>
+					   <li class="nav-item">
+						   <a href="/configuracoes" class="nav-link"><i class="fas fa-cogs"></i>Configurações</a>
+					   </li>
+				</ul>
+			</nav>
+		</aside>
+		<main class="main-content">
+			<h1 style="margin-bottom:2rem;">Rastreabilidade de Viagens</h1>
+						<div class="metric-card" style="margin-top: 0.9rem; margin-bottom: 1.5rem;">
+								<div class="card-header" style="margin-bottom: 1.5rem;">
+									<h3 style="color: var(--text-primary); font-size: 1.2rem; font-weight: 600;">
+										<i class="fas fa-list"></i> Adicionar Múltiplas Viagens
+									</h3>
+								</div>
+								<form id="form-viagens-multiplas">
+									<div style="display: flex; gap: 1rem; align-items: flex-end;">
+										<div style="flex: 1;">
+											<label style="display: block; color: var(--text-secondary); margin-bottom: 0.5rem; font-size: 0.9rem;">
+												<i class="fas fa-barcode"></i> Viagens (uma por linha):
+											</label>
+											<textarea id="viagens-multiplas" rows="3" placeholder="Insira uma ou mais viagens" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary); font-size: 1rem;"></textarea>
+										</div>
+										<button id="btn-adicionar-multiplas" class="btn btn-success" style="padding: 12px 32px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+											<i class="fas fa-plus"></i> Adicionar Viagens
+										</button>
+									</div>
+								</form>
+						</div>
+			<div id="msg" style="margin-bottom:1rem;"></div>
+			<div style="overflow-x:auto;">
+				<table id="tabela-viagens" class="table table-striped table-bordered" style="width:100%;text-align:center;">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Viagem</th>
+							<th>Preparada</th>
+							<th>Conferida</th>
+							<th>Expedida</th>
+							<th>Multi</th>
+							<th>Data Criação</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+			<div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+				   <button id="btn-excluir-tudo" class="btn btn-danger" style="padding: 12px 32px; background: linear-gradient(135deg, #e53935, #e35d5b); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					   <i class="fas fa-trash"></i> Excluir
+				   </button>
+			</div>
+		</main>
+	</div>
+
+	<script>
+	   function carregarViagens() {
+		   fetch('/api/rastreabilidade')
+			   .then(res => res.json())
+			   .then(resp => {
+				   const data = resp.dados || [];
+				   const tbody = document.querySelector('#tabela-viagens tbody');
+				   tbody.innerHTML = '';
+				   data.forEach(v => {
+					   function tdSimNao(valor) {
+						   return `<td class="${valor ? 'sim-verde' : 'nao-vermelho'}">${valor ? 'Sim' : 'Não'}</td>`;
+					   }
+					   function tdExpedida(v) {
+						   if (v.expedida_html === 'Sim') {
+							   return `<td class="sim-verde"><i class='fas fa-check-circle'></i> Sim</td>`;
+						   } else if (v.expedida_html === 'Não') {
+							   return `<td class="nao-vermelho"><i class='fas fa-times-circle'></i> Não</td>`;
+						   } else if (v.expedida_html === 'Em preparação') {
+							   return `<td class="em-preparacao">Em carregamento</td>`;
+						   } else {
+							   return `<td><span style='color: #999; font-weight: bold;'>${v.expedida_html}</span></td>`;
+						   }
+					   }
+					   tbody.innerHTML += `
+						   <tr>
+							   <td>${v.id}</td>
+							   <td>${v.viagem}</td>
+							   ${tdSimNao(v.preparada)}
+							   ${tdSimNao(v.conferida)}
+							   ${tdExpedida(v)}
+							   <td>${v.data_criacao}</td>
+							   <!-- coluna Origem removida -->
+							   <td><button class="btn btn-danger btn-excluir" data-id="${v.id}" title="Excluir viagem"><i class="fas fa-trash"></i></button></td>
+						   </tr>
+					   `;
+				   });
+				   // Adiciona evento aos botões de exclusão
+				   document.querySelectorAll('.btn-excluir').forEach(btn => {
+					   btn.addEventListener('click', function() {
+						   if (confirm('Tem certeza que deseja excluir esta viagem?')) {
+							   const id = this.getAttribute('data-id');
+							   fetch(`/api/viagens/${id}`, { method: 'DELETE' })
+								   .then(res => res.json())
+								   .then(data => {
+									   carregarViagens();
+									   document.getElementById('msg').textContent = data.message || data.error;
+								   });
+						   }
+					   });
+				   });
+			   });
+	   }
+
+
+
+
+
+	   document.getElementById('form-viagens-multiplas').addEventListener('submit', function(e) {
+		   e.preventDefault();
+		   const textarea = document.getElementById('viagens-multiplas');
+		   const viagens = textarea.value.split(/\r?\n/).map(v => v.trim()).filter(v => v);
+		   if (viagens.length === 0) return;
+		   fetch('/api/viagens/lote', {
+			   method: 'POST',
+			   headers: {'Content-Type': 'application/json'},
+			   body: JSON.stringify({viagens})
+		   })
+		   .then(res => res.json())
+		   .then(data => {
+			   carregarViagens();
+			   document.getElementById('msg').textContent = data.message || data.error;
+			   textarea.value = '';
+		   });
+	   });
+
+	   window.onload = carregarViagens;
+
+	   document.getElementById('btn-excluir-tudo').addEventListener('click', function() {
+		   if (confirm('Tem certeza que deseja excluir todas as viagens?')) {
+			   fetch('/api/viagens/todas', { method: 'DELETE' })
+				   .then(res => res.json())
+				   .then(data => {
+					   carregarViagens();
+					   document.getElementById('msg').textContent = data.message || data.error;
+				   });
+		   }
+	   });
+	</script>
+</body>
+</html>
