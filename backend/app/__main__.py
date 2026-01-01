@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_cors import CORS
 from app.routes.conferencia import conferencia_bp
@@ -9,9 +10,11 @@ from app.routes.preparacao import bp_preparacao
 from app.routes.configuracoes import configuracoes_bp
 
 def create_app():
-    import os
-    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-    app = Flask(__name__, static_folder=static_dir)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    static_dir = os.path.join(base_dir, "static")
+    templates_dir = os.path.join(base_dir, "templates")
+    
+    app = Flask(__name__, static_folder=static_dir, template_folder=templates_dir)
     CORS(app)
 
     # Registrar blueprints
@@ -28,5 +31,4 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)
