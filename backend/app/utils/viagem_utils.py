@@ -3,6 +3,12 @@ import sqlite3
 from datetime import datetime
 import os
 from pathlib import Path
+import sys
+
+# Adicionar o diretório backend ao path
+backend_path = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(backend_path))
+
 from config import DB_CONFIG
 
 def get_sqlite_connection():
