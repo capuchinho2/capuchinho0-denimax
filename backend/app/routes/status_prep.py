@@ -1,6 +1,6 @@
 
 from flask import Blueprint, render_template, request, jsonify
-from app.utils.logic import obter_status_prep
+from ..utils.logic import obter_status_prep
 
 status_prep_bp = Blueprint('status_prep', __name__)
 

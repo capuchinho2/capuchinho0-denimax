@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request
-from app.utils.conferencia_utils import buscar_viagem_completa, forcar_atualizacao_site, acessar_suporte_com_cache
+from ..utils.conferencia_utils import buscar_viagem_completa, forcar_atualizacao_site, acessar_suporte_com_cache
 from bs4 import BeautifulSoup
 
 conferencia_bp = Blueprint('conferencia', __name__)

@@ -25,7 +25,7 @@ import shutil
 @rastreabilidade_bp.route('/api/viagens/todas', methods=['DELETE'])
 def api_excluir_todas_viagens():
     try:
-        from app.utils.viagem_utils import get_sqlite_connection
+        from ..utils.viagem_utils import get_sqlite_connection
         conn = get_sqlite_connection()
         cursor = conn.cursor()
         cursor.execute('DELETE FROM viagens')
@@ -41,10 +41,10 @@ def api_excluir_todas_viagens():
         return jsonify({'message': 'Todas as viagens e caches foram excluídos!'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-from app.utils.viagem_utils import inserir_viagem, listar_viagens, atualizar_status_viagem, excluir_viagem, get_sqlite_connection
-from app.utils.logic import buscar_conferencia_viagem
+from ..utils.viagem_utils import inserir_viagem, listar_viagens, atualizar_status_viagem, excluir_viagem, get_sqlite_connection
+from ..utils.logic import buscar_conferencia_viagem
 # Adiciona utilitário de cache
-from app.utils.cache_utils import salvar_cache_palete, ler_cache_palete
+from ..utils.cache_utils import salvar_cache_palete, ler_cache_palete
 import pyodbc
 # Função utilitária para verificar se a viagem está preparada
 def viagem_esta_preparada(viagem):
@@ -82,7 +82,7 @@ def viagem_esta_preparada(viagem):
 # Rota para excluir viagem
 @rastreabilidade_bp.route('/api/viagens/<int:viagem_id>', methods=['DELETE'])
 def api_excluir_viagem(viagem_id):
-    from app.utils.cache_utils import get_cache_path
+    from ..utils.cache_utils import get_cache_path
     try:
         excluir_viagem(viagem_id)
         # Remove o cache se existir
@@ -138,7 +138,7 @@ def api_rastreabilidade():
                         conn.commit()
                     atualizou = True
                 if not status['conferida']:
-                    from app.utils.conferencia_utils import buscar_viagem_completa
+                    from ..utils.conferencia_utils import buscar_viagem_completa
                     try:
                         conf_result = buscar_viagem_completa(viagem)
                         if conf_result.get('success'):

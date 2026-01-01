@@ -4,8 +4,8 @@ from datetime import datetime
 import pandas as pd
 import pyodbc
 from io import BytesIO
-from app.utils.db_utils import get_db_connection
-from app.utils.logic import processar_het, processar_hom, processar_pedidos_x7, clear_cache, cache_store, cache_timestamps, obter_status_prep, cache_with_timeout
+from ..utils.db_utils import get_db_connection
+from ..utils.logic import processar_het, processar_hom, processar_pedidos_x7, clear_cache, cache_store, cache_timestamps, obter_status_prep, cache_with_timeout
 
 api_bp = Blueprint('api', __name__)
 
@@ -294,7 +294,7 @@ def obter_status_prep_endpoint():
 
 @api_bp.route('/api/conferencia/viagem', methods=['GET'])
 def buscar_conferencia():
-    from app.utils.logic import buscar_conferencia_viagem
+    from ..utils.logic import buscar_conferencia_viagem
     
     viagem = request.args.get('viagem')
     if not viagem:
