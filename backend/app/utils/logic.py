@@ -13,7 +13,7 @@ def processar_het(data_inicial, data_final, conn=None):
         dict com preparado e pendente em kg
     """
     try:
-        from app.utils.db_utils import get_db_connection
+        from .db_utils import get_db_connection
         import pandas as pd
         from datetime import datetime, timedelta
         
@@ -131,7 +131,7 @@ def processar_hom(data_inicial, data_final, conn=None):
         dict com preparado e pendente em kg
     """
     try:
-        from app.utils.db_utils import get_db_connection
+        from .db_utils import get_db_connection
         import pandas as pd
         from datetime import datetime, timedelta
         
@@ -280,7 +280,7 @@ def processar_pedidos_x7(data_busca):
         dict com total_registros, total_peso, lista de dados
     """
     try:
-        from app.utils.db_utils import get_db_connection
+        from .db_utils import get_db_connection
         import pandas as pd
         
         conn = get_db_connection()
@@ -396,7 +396,7 @@ def obter_status_prep(data_inicial, data_final, nome_preparador):
         nome_preparador: string com nome ou código do preparador (opcional)
     """
     try:
-        from app.utils.db_utils import get_db_connection
+        from .db_utils import get_db_connection
         import pandas as pd
         
         conn = get_db_connection()

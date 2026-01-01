@@ -1,12 +1,6 @@
 import pyodbc
-import sys
-from pathlib import Path
 
-# Adicionar o diretório backend ao path
-backend_path = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(backend_path))
-
-from app.utils.settings_config import DB_SETTINGS
+from .settings_config import DB_SETTINGS
 
 def get_db_connection():
     """
