@@ -1,2 +1,14 @@
-preinstall:
-  - apt-get update && apt-get install -y unixodbc-dev
+services:
+  - type: web
+    name: dashboard-faturamento
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn backend.app.__main__:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+    nativeEnvironments:
+      - key: packages
+        value:
+          - unixodbc
+          - unixodbc-dev
