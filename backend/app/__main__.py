@@ -1,13 +1,13 @@
 import os
 from flask import Flask
 from flask_cors import CORS
-from app.routes.conferencia import conferencia_bp
-from app.routes.dashboard import dashboard_bp
-from app.routes.status_prep import status_prep_bp
-from app.routes.api import api_bp
-from app.routes.rastreabilidade import rastreabilidade_bp
-from app.routes.preparacao import bp_preparacao
-from app.routes.configuracoes import configuracoes_bp
+from .routes.conferencia import conferencia_bp
+from .routes.dashboard import dashboard_bp
+from .routes.status_prep import status_prep_bp
+from .routes.api import api_bp
+from .routes.rastreabilidade import rastreabilidade_bp
+from .routes.preparacao import bp_preparacao
+from .routes.configuracoes import configuracoes_bp
 
 def create_app():
     base_dir = os.path.dirname(os.path.abspath(__file__))
