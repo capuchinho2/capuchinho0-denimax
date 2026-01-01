@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 from pathlib import Path
 
-from ...config import DB_CONFIG
+from ..config import DB_CONFIG
 
 def get_sqlite_connection():
     db_path = DB_CONFIG["SQLITE_PATH"]
