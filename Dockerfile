@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar código da aplicação
 COPY . .
 
+# Adicionar backend ao PYTHONPATH para imports funcionarem
+ENV PYTHONPATH=/app/backend:$PYTHONPATH
+
 # Expor porta
 EXPOSE 8080
 
