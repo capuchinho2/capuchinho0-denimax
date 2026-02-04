@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, jsonify, request
 from ..utils.conferencia_utils import buscar_viagem_completa, forcar_atualizacao_site, acessar_suporte_com_cache
+from ..utils.conferencia_status_prep import buscar_todos_paletes_conferencia
+from ..utils.cache_conferencia import limpar_caches_antigos
 from bs4 import BeautifulSoup
 
 conferencia_bp = Blueprint('conferencia', __name__)
@@ -119,4 +121,53 @@ def api_atualizar_palete():
         else:
             return jsonify({"success": False, "error": "Erro ao atualizar palete"})
     except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@conferencia_bp.route('/api/conferencia/periodo', methods=['GET'])
+def api_conferencia_periodo():
+    """
+    API para buscar paletes por período (incompletos, preparados e ambos).
+    Verifica o status de conferência de cada palete.
+    """
+    data_inicial = request.args.get('data_inicial')
+    data_final = request.args.get('data_final')
+    preparador = request.args.get('preparador', '').strip()
+    
+    print(f"[DEBUG API conferencia/periodo] data_inicial={data_inicial}, data_final={data_final}, preparador='{preparador}'")
+    
+    if not data_inicial or not data_final:
+        return jsonify({"success": False, "error": "Parâmetros data_inicial e data_final são obrigatórios"}), 400
+    
+    try:
+        # Buscar TODOS os paletes e verificar conferência
+        resultado = buscar_todos_paletes_conferencia(data_inicial, data_final, preparador)
+        
+        print(f"[DEBUG API conferencia/periodo] Resultado: success={resultado.get('success')}, total={resultado.get('total')}")
+        
+        if not resultado.get('success'):
+            return jsonify(resultado), 500
+        
+        return jsonify(resultado)
+        
+    except Exception as e:
+        print(f"[ERRO] API conferencia/periodo: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@conferencia_bp.route('/api/conferencia/limpar-cache', methods=['POST'])
+def api_limpar_cache():
+    """
+    API para limpar caches expirados (manutenção).
+    """
+    try:
+        removidos = limpar_caches_antigos()
+        return jsonify({
+            "success": True,
+            "message": f"{removidos} cache(s) removido(s)"
+        })
+    except Exception as e:
+        print(f"[ERRO] API limpar-cache: {e}")
         return jsonify({"success": False, "error": str(e)}), 500

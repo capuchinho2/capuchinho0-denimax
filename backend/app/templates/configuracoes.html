@@ -25,6 +25,19 @@
                     <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
                     <li class="nav-item"><a href="/status-prep" class="nav-link"><i class="fas fa-clipboard-list"></i>STATUS_PREP</a></li>
                     <li class="nav-item"><a href="/rastreabilidade" class="nav-link"><i class="fas fa-search-location"></i>Rastreabilidade</a></li>
+                    
+                    <!-- Menu Dropdown Produtividade -->
+                    <li class="nav-item-dropdown">
+                        <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)">
+                            <i class="fas fa-chart-line"></i>Produtividade<i class="fas fa-chevron-down"></i>
+                        </button>
+                        <ul class="nav-submenu">
+                            <li><a href="/produtividade-operador" class="nav-submenu-link"><i class="fas fa-user-hard-hat"></i>Produtividade Operador</a></li>
+                            <li><a href="/produtividade-carregador" class="nav-submenu-link"><i class="fas fa-truck-loading"></i>Produtividade Carregador</a></li>
+                            <li><a href="/produtividade-preparador" class="nav-submenu-link"><i class="fas fa-boxes"></i>Produtividade Preparador</a></li>
+                        </ul>
+                    </li>
+
                     <li class="nav-item"><a href="/configuracoes" class="nav-link active"><i class="fas fa-cogs"></i>Configurações</a></li>
                 </ul>
             </nav>
@@ -49,6 +62,12 @@
         </main>
     </div>
     <script>
+        function toggleDropdown(button) {
+            const submenu = button.nextElementSibling;
+            button.classList.toggle('active');
+            submenu.classList.toggle('show');
+        }
+        
         // Exemplo de submenus dinâmicos
         document.querySelectorAll('.submenu-link').forEach(link => {
             link.addEventListener('click', function(e) {

@@ -11,4 +11,3 @@ DB_CONFIG = {
 API_HOST = "0.0.0.0"
 API_PORT = 5000
 DEBUG_MODE = True
-

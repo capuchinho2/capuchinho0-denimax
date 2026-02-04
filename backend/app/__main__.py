@@ -8,6 +8,9 @@ from .routes.api import api_bp
 from .routes.rastreabilidade import rastreabilidade_bp
 from .routes.preparacao import bp_preparacao
 from .routes.configuracoes import configuracoes_bp
+from .routes.produtividade_operador import produtividade_operador_bp
+from .routes.produtividade_carregador import produtividade_carregador_bp
+from .routes.produtividade_preparador import produtividade_preparador_bp
 
 def create_app():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +28,9 @@ def create_app():
     app.register_blueprint(rastreabilidade_bp)
     app.register_blueprint(bp_preparacao)
     app.register_blueprint(configuracoes_bp)
+    app.register_blueprint(produtividade_operador_bp)
+    app.register_blueprint(produtividade_carregador_bp)
+    app.register_blueprint(produtividade_preparador_bp)
 
     return app
 

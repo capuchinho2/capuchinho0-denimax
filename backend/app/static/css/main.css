@@ -204,6 +204,76 @@ body {
       transform: translateX(5px);
     }
 
+    /* Dropdown Menu */
+    .nav-item-dropdown {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-dropdown-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 1rem 1.5rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      position: relative;
+    }
+
+    .nav-dropdown-toggle:hover {
+      background: linear-gradient(135deg, var(--primary-color)20, var(--secondary-color)20);
+      color: var(--primary-color);
+      transform: translateX(5px);
+    }
+
+    .nav-dropdown-toggle i.fa-chevron-down {
+      margin-left: auto;
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-dropdown-toggle.active i.fa-chevron-down {
+      transform: rotate(180deg);
+    }
+
+    .nav-submenu {
+      list-style: none;
+      padding-left: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .nav-submenu.show {
+      max-height: 500px;
+    }
+
+    .nav-submenu-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.8rem 1.5rem 0.8rem 3rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      font-weight: 400;
+      font-size: 0.95rem;
+    }
+
+    .nav-submenu-link:hover, .nav-submenu-link.active {
+      background: linear-gradient(135deg, var(--primary-color)15, var(--secondary-color)15);
+      color: var(--primary-color);
+      transform: translateX(5px);
+    }
+
     /* Main Content */
     .main-content {
       padding: 1.5rem 2rem;
@@ -235,7 +305,7 @@ body {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.2rem;        /* reduzido de 2rem */
+      margin-bottom: 1.5rem;        /* aumentado de 0.2rem para 1.5rem */
       padding: 0.4rem 0.8rem;     /* reduzido */
       background: var(--card-bg);
       border-radius: 14px;        /* menor */

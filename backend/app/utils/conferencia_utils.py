@@ -121,6 +121,12 @@ def analisar_palete(viagem, palete, forcar_atualizacao=False):
     
     linhas = tbody.find_all("tr")
     
+    # Debug: mostrar classes das primeiras linhas
+    if linhas and len(linhas) > 0:
+        for i, row in enumerate(linhas[:3]):  # Mostrar apenas 3 primeiras
+            row_class = row.get("class")
+            print(f"[DEBUG analisar_palete] Linha {i+1}: class={row_class}, type={type(row_class)}")
+    
     # Se não tem linhas, palete não foi lançado
     if not linhas:
         return {
@@ -133,13 +139,26 @@ def analisar_palete(viagem, palete, forcar_atualizacao=False):
         }
     
     total_linhas = len(linhas)
-    linhas_gray = sum(1 for row in linhas if "gray" in (row.get("class") or []))
+    linhas_gray = 0
+    
+    # Contar linhas com classe "gray" (conferidas)
+    for row in linhas:
+        row_class = row.get("class") or []
+        # Verificar se "gray" está na lista de classes
+        if isinstance(row_class, list) and "gray" in row_class:
+            linhas_gray += 1
+        elif isinstance(row_class, str) and "gray" in row_class:
+            linhas_gray += 1
+    
     todas_gray = (linhas_gray == total_linhas and total_linhas > 0)
     
     if total_linhas > 0:
         porcentagem = (linhas_gray / total_linhas) * 100
     else:
         porcentagem = 0
+    
+    # Debug
+    print(f"[DEBUG analisar_palete] Viagem {viagem}, Palete {palete}: total_linhas={total_linhas}, linhas_gray={linhas_gray}, porcentagem={porcentagem:.1f}%")
     
     # Extrair detalhes dos itens
     itens = []
@@ -152,12 +171,25 @@ def analisar_palete(viagem, palete, forcar_atualizacao=False):
             descricao = cols[2]
             qtde = cols[5]
             
-            if "gray" in row_class:
-                status = "CONFERIDO"
-            elif "red" in row_class:
-                status = "FALTA BIPAR"
-            elif "white" in row_class:
-                status = "FALTA CONFERIR"
+            # Verificar classe corretamente (pode ser lista ou string)
+            if isinstance(row_class, list):
+                if "gray" in row_class:
+                    status = "CONFERIDO"
+                elif "red" in row_class:
+                    status = "FALTA BIPAR"
+                elif "white" in row_class:
+                    status = "FALTA CONFERIR"
+                else:
+                    status = "PENDENTE"
+            elif isinstance(row_class, str):
+                if "gray" in row_class:
+                    status = "CONFERIDO"
+                elif "red" in row_class:
+                    status = "FALTA BIPAR"
+                elif "white" in row_class:
+                    status = "FALTA CONFERIR"
+                else:
+                    status = "PENDENTE"
             else:
                 status = "PENDENTE"
             

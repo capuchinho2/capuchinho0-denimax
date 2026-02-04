@@ -399,6 +399,8 @@ def obter_status_prep(data_inicial, data_final, nome_preparador):
         from .db_utils import get_db_connection
         import pandas as pd
         
+        print(f"[DEBUG obter_status_prep] Iniciando com data_inicial={data_inicial}, data_final={data_final}, preparador={nome_preparador}")
+        
         conn = get_db_connection()
         
         # Consulta ONDAITM com filtro de intervalo de datas
@@ -413,6 +415,8 @@ def obter_status_prep(data_inicial, data_final, nome_preparador):
         if nome_preparador:
             query += f" AND UPPER(TRIM(PREP)) LIKE '%{nome_preparador.upper()}%'"
         
+        print(f"[DEBUG] Query: {query[:200]}...")
+        
         # Executar query usando cursor para evitar problemas de compatibilidade com pandas
         cursor = conn.cursor()
         cursor.execute(query)
@@ -423,6 +427,8 @@ def obter_status_prep(data_inicial, data_final, nome_preparador):
         # Buscar todos os resultados
         rows = cursor.fetchall()
         
+        print(f"[DEBUG] Linhas retornadas: {len(rows)}")
+        
         # Criar DataFrame manualmente
         df_ondaitm = pd.DataFrame.from_records(rows, columns=columns)
         
@@ -430,14 +436,19 @@ def obter_status_prep(data_inicial, data_final, nome_preparador):
         conn.close()
         
         if df_ondaitm.empty:
+            print("[DEBUG] DataFrame vazio")
             return {
                 "success": True,
                 "total": 0,
                 "preparados": 0,
                 "incompletos": 0,
                 "erro": 0,
+                "paletes_nao_iniciados": 0,
+                "paletes_em_andamento": 0,
+                "paletes_sem_preparador": 0,
                 "dados": [],
-                "viagens_pendentes": []
+                "viagens_pendentes": [],
+                "viagens_preparadas": []
             }
         
         # Filtra apenas linhas onde CODTLI está vazia ou nula
@@ -509,35 +520,64 @@ def obter_status_prep(data_inicial, data_final, nome_preparador):
                 paletes_dict[chave]['status'] = 'PREPARADO'
         
         # Filtrar apenas paletes incompletos para a lista
-        lista_viagens_pendentes = [p for p in paletes_dict.values() if p['status'] == 'INCOMPLETO']
-        # Remover campo status antes de enviar
-        for p in lista_viagens_pendentes:
-            del p['status']
+        lista_viagens_pendentes = []
+        paletes_nao_iniciados = 0  # Prep não vazio e lido = 0
+        paletes_em_andamento = 0   # Prep não vazio e lido > 0
+        paletes_sem_preparador = 0 # Prep vazio e lido = 0
         
-        # Paletes preparados (status PREPARADO) - agrupados por viagem, palete e prep
-        viagens_preparadas_df = df_filtrado[df_filtrado['STATUS_PREPARACAO'] == 'PREPARADO']
+        for p in paletes_dict.values():
+            if p['status'] == 'INCOMPLETO':
+                lista_viagens_pendentes.append({
+                    'viagem': p['viagem'],
+                    'palete': p['palete'],
+                    'prep': p['prep'],
+                    'lido': p['lido'],
+                    'total': p['total']
+                })
+                
+                # Contar paletes por status de leitura
+                prep_str = str(p['prep']).strip()
+                if prep_str and prep_str != '':
+                    # Prep não vazio
+                    if p['lido'] == 0:
+                        paletes_nao_iniciados += 1
+                    else:
+                        paletes_em_andamento += 1
+                else:
+                    # Prep vazio e lido = 0
+                    if p['lido'] == 0:
+                        paletes_sem_preparador += 1
+        
+        # Paletes preparados (status PREPARADO) - usar paletes_dict para garantir consistência
         lista_paletes_preparados = []
-        if not viagens_preparadas_df.empty:
-            agrupado = viagens_preparadas_df.groupby(['VIAGEM', 'PALETE', 'PREP'], as_index=False).first()
-            for _, row in agrupado.iterrows():
+        for p in paletes_dict.values():
+            if p['status'] == 'PREPARADO':
                 lista_paletes_preparados.append({
-                    'viagem': str(row['VIAGEM']),
-                    'palete': str(row['PALETE']),
-                    'prep': str(row['PREP']) if pd.notna(row['PREP']) else ''
+                    'viagem': p['viagem'],
+                    'palete': p['palete'],
+                    'prep': p['prep']
                 })
 
+        print(f"[DEBUG] Retornando: preparados={paletes_preparados}, incompletos={paletes_incompletos}, nao_iniciados={paletes_nao_iniciados}, em_andamento={paletes_em_andamento}, sem_preparador={paletes_sem_preparador}")
+        
         return {
             "success": True,
             "total": len(df_filtrado),
             "preparados": paletes_preparados,
             "incompletos": paletes_incompletos,
             "erro": paletes_erro,
+            "paletes_nao_iniciados": paletes_nao_iniciados,
+            "paletes_em_andamento": paletes_em_andamento,
+            "paletes_sem_preparador": paletes_sem_preparador,
             "dados": df_filtrado.to_dict('records'),
             "viagens_pendentes": lista_viagens_pendentes,
             "viagens_preparadas": lista_paletes_preparados
         }
         
     except Exception as e:
+        print(f"[ERROR obter_status_prep] Exceção: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return {
             "success": False,
             "error": str(e),
@@ -545,8 +585,12 @@ def obter_status_prep(data_inicial, data_final, nome_preparador):
             "preparados": 0,
             "incompletos": 0,
             "erro": 0,
+            "paletes_nao_iniciados": 0,
+            "paletes_em_andamento": 0,
+            "paletes_sem_preparador": 0,
             "dados": [],
-            "viagens_pendentes": []
+            "viagens_pendentes": [],
+            "viagens_preparadas": []
         }
 
 def cache_with_timeout(timeout_seconds=300):

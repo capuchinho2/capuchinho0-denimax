@@ -281,16 +281,41 @@ def status_cache():
 
 @api_bp.route('/api/status-prep', methods=['GET'])
 def obter_status_prep_endpoint():
-    data_inicial = request.args.get('dataInicial')
-    data_final = request.args.get('dataFinal')
-    nome_preparador = request.args.get('preparador', '').strip()
-    if not data_inicial or not data_final:
-        return jsonify({"success": False, "error": "Parâmetros dataInicial e dataFinal são obrigatórios"}), 400
-    resultado = obter_status_prep(data_inicial, data_final, nome_preparador)
-    if resultado.get('success'):
-        return jsonify(resultado)
-    else:
-        return jsonify(resultado), 500
+    from ..utils.colaborador_utils import buscar_nome_colaborador_por_codigo
+    try:
+        data_inicial = request.args.get('dataInicial')
+        data_final = request.args.get('dataFinal')
+        nome_preparador = request.args.get('preparador', '').strip()
+        
+        print(f"[DEBUG] Recebendo requisição: dataInicial={data_inicial}, dataFinal={data_final}, preparador={nome_preparador}")
+        
+        if not data_inicial or not data_final:
+            return jsonify({"success": False, "error": "Parâmetros dataInicial e dataFinal são obrigatórios"}), 400
+        
+        resultado = obter_status_prep(data_inicial, data_final, nome_preparador)
+        
+        # Adicionar nome do colaborador para cada viagem pendente
+        if resultado.get('success') and resultado.get('viagens_pendentes'):
+            print(f"[DEBUG] Adicionando nomes para {len(resultado['viagens_pendentes'])} viagens pendentes")
+            for viagem in resultado['viagens_pendentes']:
+                codigo = viagem.get('prep', '').strip()
+                print(f"[DEBUG] Buscando nome para código: '{codigo}'")
+                nome = buscar_nome_colaborador_por_codigo(codigo) if codigo else None
+                viagem['nome'] = nome
+                print(f"[DEBUG] Nome encontrado: {nome}")
+        
+        print(f"[DEBUG] Resultado obtido: success={resultado.get('success')}, preparados={resultado.get('preparados')}, viagens_preparadas={len(resultado.get('viagens_preparadas', []))}")
+        
+        if resultado.get('success'):
+            return jsonify(resultado)
+        else:
+            print(f"[ERROR] Erro no resultado: {resultado.get('error')}")
+            return jsonify(resultado), 500
+    except Exception as e:
+        print(f"[ERROR] Exceção no endpoint: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @api_bp.route('/api/conferencia/viagem', methods=['GET'])
 def buscar_conferencia():

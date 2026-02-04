@@ -60,6 +60,19 @@
                  Rastreabilidade
                </a>
              </li>
+             
+             <!-- Menu Dropdown Produtividade -->
+             <li class="nav-item-dropdown">
+               <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)">
+                 <i class="fas fa-chart-line"></i>Produtividade<i class="fas fa-chevron-down"></i>
+               </button>
+               <ul class="nav-submenu">
+                 <li><a href="/produtividade-operador" class="nav-submenu-link"><i class="fas fa-user-hard-hat"></i>Produtividade Operador</a></li>
+                 <li><a href="/produtividade-carregador" class="nav-submenu-link"><i class="fas fa-truck-loading"></i>Produtividade Carregador</a></li>
+                 <li><a href="/produtividade-preparador" class="nav-submenu-link"><i class="fas fa-boxes"></i>Produtividade Preparador</a></li>
+               </ul>
+             </li>
+
              <li class="nav-item">
                <a href="/configuracoes" class="nav-link">
                  <i class="fas fa-cogs"></i>
@@ -71,7 +84,7 @@
     </aside>
     <!-- Main Content -->
     <main class="main-content">
-      <header class="header">
+      <header class="header" style="margin-bottom: 1.5rem !important;">
         <div class="header-info">
           <h1 class="header-title">Painel de Conferência</h1>
           <p class="header-subtitle">Digite a viagem para iniciar a conferência</p>
@@ -81,11 +94,106 @@
           <div class="current-date" id="currentDate">--/--/----</div>
         </div>
       </header>
+      
+      <!-- Filtro de Data e Preparador -->
+      <div class="metric-card" style="padding: 1.5rem !important; margin-bottom: 1.5rem !important; margin-top: 0 !important; min-height: auto !important;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <label style="color: var(--text-primary);">
+            <i class="fas fa-calendar"></i> Período:
+          </label>
+          <input type="date" id="dataInicialConf" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary);">
+          <span style="color: var(--text-secondary);">até</span>
+          <input type="date" id="dataFinalConf" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary);">
+          <button onclick="preencherDataHojeConf()" style="padding: 8px 16px; background: #00FF88; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-calendar-day"></i> Hoje
+          </button>
+          <label style="color: var(--text-primary); margin-left: 1rem;">
+            <i class="fas fa-user"></i> Preparador:
+          </label>
+          <input type="text" id="nomePreparadorConf" placeholder="Digite o CDP do usuário" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary); min-width: 180px;">
+          <button id="btnBuscarConferencia" onclick="buscarConferencias();" style="padding: 8px 20px; background: var(--primary-color); border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+      </div>
+
+      <!-- Card de Conferência -->
+      <div class="metric-card" style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="color: var(--text-primary); margin: 0;">
+            <i class="fas fa-clipboard-check"></i> Paletes em Conferência
+          </h3>
+          <button id="toggleTabelaConferencia" onclick="toggleTabelaConferencia()" style="
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;">
+            <i class="fas fa-eye"></i>
+            <span id="textoBotaoToggleConferencia">Mostrar</span>
+          </button>
+        </div>
+        <div id="resumoPaletesConferencia" style="
+          display: flex;
+          gap: 1.5rem;
+          margin-bottom: 1rem;
+          padding: 1rem;
+          background: rgba(52, 152, 219, 0.08);
+          border-radius: 10px;
+          border: 1px solid rgba(52, 152, 219, 0.2);
+        ">
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #28a745;">
+              <span id="paletesConferidos">0</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
+              <i class="fas fa-check-circle"></i> Paletes Conferidos
+            </div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #d9534f;">
+              <span id="paletesNaoConferidos">0</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
+              <i class="fas fa-exclamation-circle"></i> Paletes Não Conferidos
+            </div>
+          </div>
+        </div>
+        <div id="containerTabelaConferencia" style="overflow-x: auto; display: none;">
+          <table id="tabelaPaletesConferencia" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--dark-bg); border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Viagem</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Palete</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Prep</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Status</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">%</th>
+              </tr>
+            </thead>
+            <tbody id="corpoTabelaConferencia">
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-primary);">-</td>
+                <td style="padding: 12px; color: var(--text-primary);">-</td>
+                <td style="padding: 12px; color: var(--text-primary);">-</td>
+                <td style="padding: 12px; color: var(--text-primary);">-</td>
+                <td style="padding: 12px; color: var(--text-primary);">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Card de Busca de Viagem -->
       <div class="metric-card" style="margin-top: 0.9rem;">
         <div class="card-header" style="margin-bottom: 1.5rem;">
           <h3 style="color: var(--text-primary); font-size: 1.2rem; font-weight: 600;">
-            <i class="fas fa-truck"></i> Buscar Viagem
+            <i class="fas fa-truck"></i> Buscar Viagem Específica
           </h3>
         </div>
         <div style="display: flex; gap: 1rem; align-items: center;">
@@ -381,6 +489,129 @@
         buscarViagem();
       }
     });
+    
+    function toggleDropdown(button) {
+      const submenu = button.nextElementSibling;
+      button.classList.toggle('active');
+      submenu.classList.toggle('show');
+    }
+
+    // Função para toggle da tabela de conferência
+    function toggleTabelaConferencia() {
+      const container = document.getElementById('containerTabelaConferencia');
+      const botao = document.getElementById('textoBotaoToggleConferencia');
+      
+      if (container.style.display === 'none') {
+        container.style.display = 'block';
+        botao.textContent = 'Ocultar';
+      } else {
+        container.style.display = 'none';
+        botao.textContent = 'Mostrar';
+      }
+    }
+
+    // Função para preencher data de hoje
+    function preencherDataHojeConf() {
+      const hoje = new Date();
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      const dataFormatada = `${ano}-${mes}-${dia}`;
+      document.getElementById('dataInicialConf').value = dataFormatada;
+      document.getElementById('dataFinalConf').value = dataFormatada;
+    }
+
+    // Função para buscar conferências por período
+    async function buscarConferencias() {
+      const dataInicial = document.getElementById('dataInicialConf').value;
+      const dataFinal = document.getElementById('dataFinalConf').value;
+      const preparador = document.getElementById('nomePreparadorConf').value.trim();
+      const btnBuscar = document.getElementById('btnBuscarConferencia');
+
+      if (!dataInicial || !dataFinal) {
+        alert('Por favor, selecione as datas inicial e final.');
+        return;
+      }
+
+      // Desabilitar botão durante busca
+      btnBuscar.disabled = true;
+      btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+
+      try {
+        let url = `/api/conferencia/periodo?data_inicial=${dataInicial}&data_final=${dataFinal}`;
+        if (preparador) {
+          url += `&preparador=${encodeURIComponent(preparador)}`;
+        }
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.success) {
+          exibirResultadosPeriodo(data);
+        } else {
+          alert('Erro ao buscar dados: ' + (data.error || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        console.error('Erro ao buscar conferências:', error);
+        alert('Erro ao buscar dados de conferência');
+      } finally {
+        // Reabilitar botão
+        btnBuscar.disabled = false;
+        btnBuscar.innerHTML = '<i class="fas fa-search"></i> Buscar';
+      }
+    }
+
+    // Função para exibir resultados do período
+    function exibirResultadosPeriodo(data) {
+      const tbody = document.getElementById('corpoTabelaConferencia');
+      const paletesConferidos = document.getElementById('paletesConferidos');
+      const paletesNaoConferidos = document.getElementById('paletesNaoConferidos');
+
+      // Limpar tabela
+      tbody.innerHTML = '';
+
+      if (data.paletes && data.paletes.length > 0) {
+        // Contar paletes conferidos (100%) e não conferidos
+        let conferidos = 0;
+        let naoConferidos = 0;
+        
+        data.paletes.forEach((item) => {
+          const isCompleto = item.percentual === 100;
+          if (isCompleto) {
+            conferidos++;
+          } else {
+            naoConferidos++;
+          }
+
+          const statusColor = isCompleto ? '#28a745' : '#d9534f';
+
+          const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid var(--border-color)';
+          row.innerHTML = `
+            <td style="padding: 12px; color: var(--text-primary);">${item.viagem}</td>
+            <td style="padding: 12px; color: var(--text-primary);">${item.palete}</td>
+            <td style="padding: 12px; color: var(--text-primary);">${item.prep || '-'}</td>
+            <td style="padding: 12px; color: ${statusColor};">${item.status}</td>
+            <td style="padding: 12px; color: ${statusColor};">${item.percentual}%</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        // Atualizar contadores
+        paletesConferidos.textContent = conferidos;
+        paletesNaoConferidos.textContent = naoConferidos;
+      } else {
+        paletesConferidos.textContent = '0';
+        paletesNaoConferidos.textContent = '0';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="padding: 20px; text-align: center; color: var(--text-secondary);">
+              Nenhum palete encontrado no período
+            </td>
+          </tr>
+        `;
+      }
+    }
   </script>
 </body>
 </html>

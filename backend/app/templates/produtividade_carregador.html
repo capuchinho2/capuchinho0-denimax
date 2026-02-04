@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtividade Carregador</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        .stat-icon.primary { background: rgba(52, 152, 219, 0.1); color: var(--primary-color); }
+        .stat-icon.success { background: rgba(46, 204, 113, 0.1); color: var(--success-color); }
+        .stat-icon.warning { background: rgba(241, 196, 15, 0.1); color: var(--warning-color); }
+        .stat-icon.info { background: rgba(155, 89, 182, 0.1); color: #9b59b6; }
+        .stat-content h4 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+        }
+        .stat-content .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .table-container {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .data-table tbody tr:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+        .rank-1 {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(255, 215, 0, 0.1) 100%) !important;
+            border-left: 4px solid #FFD700;
+        }
+        .rank-2 {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.25) 0%, rgba(192, 192, 192, 0.1) 100%) !important;
+            border-left: 4px solid #C0C0C0;
+        }
+        .rank-3 {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.25) 0%, rgba(205, 127, 50, 0.1) 100%) !important;
+            border-left: 4px solid #CD7F32;
+        }
+        .medal-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        .medal-gold { color: #FFD700; }
+        .medal-silver { color: #C0C0C0; }
+        .medal-bronze { color: #CD7F32; }
+        .rank-position {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        .error-message {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon"><i class="fas fa-industry"></i></div>
+                    <div class="logo-text">Denimax</div>
+                </div>
+                <div class="logo-subtitle" style="color: var(--text-muted); font-size: 0.8rem;">Sistema de Produção v2.1</div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="/" class="nav-link"><i class="fas fa-home"></i>Início</a></li>
+                    <li class="nav-item"><a href="/preparacao" class="nav-link"><i class="fas fa-box-open"></i>Preparação</a></li>
+                    <li class="nav-item"><a href="/conferencia" class="nav-link"><i class="fas fa-clipboard-check"></i>Conferência</a></li>
+                    <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+                    <li class="nav-item"><a href="/status-prep" class="nav-link"><i class="fas fa-clipboard-list"></i>STATUS_PREP</a></li>
+                    <li class="nav-item"><a href="/rastreabilidade" class="nav-link"><i class="fas fa-search-location"></i>Rastreabilidade</a></li>
+                    
+                    <!-- Menu Dropdown Produtividade -->
+                    <li class="nav-item-dropdown">
+                        <button class="nav-dropdown-toggle active" onclick="toggleDropdown(this)">
+                            <i class="fas fa-chart-line"></i>Produtividade<i class="fas fa-chevron-down"></i>
+                        </button>
+                        <ul class="nav-submenu show">
+                            <li><a href="/produtividade-operador" class="nav-submenu-link"><i class="fas fa-user-hard-hat"></i>Produtividade Operador</a></li>
+                            <li><a href="/produtividade-carregador" class="nav-submenu-link active"><i class="fas fa-truck-loading"></i>Produtividade Carregador</a></li>
+                            <li><a href="/produtividade-preparador" class="nav-submenu-link"><i class="fas fa-boxes"></i>Produtividade Preparador</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a href="/configuracoes" class="nav-link"><i class="fas fa-cogs"></i>Configurações</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1 style="margin-bottom:1.5rem;"><i class="fas fa-truck-loading"></i> Produtividade Carregador</h1>
+            
+            <!-- Filtros -->
+            <div class="metric-card" style="padding: 1.5rem !important; margin-bottom: 1.5rem !important; margin-top: 0 !important; min-height: auto !important;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <label style="color: var(--text-primary);">
+                        <i class="fas fa-calendar"></i> Período:
+                    </label>
+                    <input type="date" id="data-inicio" onkeypress="if(event.key==='Enter') carregarDados()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary);">
+                    <span style="color: var(--text-secondary);">até</span>
+                    <input type="date" id="data-fim" onkeypress="if(event.key==='Enter') carregarDados()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-primary);">
+                    <button onclick="preencherDataHoje()" style="padding: 8px 16px; background: #00FF88; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-calendar-day"></i> Hoje
+                    </button>
+                    <button onclick="carregarDados()" style="padding: 8px 20px; background: var(--primary-color); border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mensagem de erro -->
+            <div id="error-container"></div>
+
+            <!-- Cards de estatísticas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Total de Paletes Bipados</h4>
+                        <div class="stat-value" id="stat-total-paletes">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Total de Carregadores</h4>
+                        <div class="stat-value" id="stat-total-operadores">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de dados -->
+            <div class="table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: var(--text-primary); margin: 0;">
+                        <i class="fas fa-table"></i> Detalhamento por Carregador
+                    </h3>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Filtrar por turno:</span>
+                        <button onclick="filtrarPorTurno('TODOS')" id="btn-turno-todos" style="padding: 6px 12px; background: var(--primary-color); border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+                            TODOS
+                        </button>
+                        <button onclick="filtrarPorTurno('1')" id="btn-turno-1" style="padding: 6px 12px; background: #6c757d; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+                            TURNO 1
+                        </button>
+                        <button onclick="filtrarPorTurno('2')" id="btn-turno-2" style="padding: 6px 12px; background: #6c757d; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+                            TURNO 2
+                        </button>
+                        <button onclick="filtrarPorTurno('3')" id="btn-turno-3" style="padding: 6px 12px; background: #6c757d; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+                            TURNO 3
+                        </button>
+                    </div>
+                </div>
+                <div id="loading" class="loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                    <p>Carregando dados...</p>
+                </div>
+                <table class="data-table" id="table-produtividade">
+                    <thead>
+                        <tr>
+                            <th>Posição</th>
+                            <th>Carregador</th>
+                            <th>Nome</th>
+                            <th>Turno</th>
+                            <th>Paletes Bipados</th>
+                            <th>% do Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-produtividade">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">
+                                Selecione um período e clique em Buscar
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function toggleDropdown(button) {
+            const submenu = button.nextElementSibling;
+            button.classList.toggle('active');
+            submenu.classList.toggle('show');
+        }
+
+        // Definir datas padrão (data de hoje)
+        window.onload = function() {
+            const hoje = new Date();
+            document.getElementById('data-inicio').valueAsDate = hoje;
+            document.getElementById('data-fim').valueAsDate = hoje;
+        }
+
+        function preencherDataHoje() {
+            // Usar fuso horário do Brasil (America/Sao_Paulo - GMT-3)
+            const hoje = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+            const [dataParte] = hoje.split(', ');
+            const [dia, mes, ano] = dataParte.split('/');
+            const dataFormatada = `${ano}-${mes}-${dia}`;
+            document.getElementById('data-inicio').value = dataFormatada;
+            document.getElementById('data-fim').value = dataFormatada;
+        }
+
+        async function carregarDados() {
+            const dataInicio = document.getElementById('data-inicio').value;
+            const dataFim = document.getElementById('data-fim').value;
+            
+            if (!dataInicio || !dataFim) {
+                mostrarErro('Por favor, selecione as datas de início e fim.');
+                return;
+            }
+            
+            // Mostrar loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error-container').innerHTML = '';
+            
+            try {
+                const response = await fetch(`/api/produtividade-carregador/dados?data_inicio=${dataInicio}&data_fim=${dataFim}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    atualizarEstatisticas(data);
+                    atualizarTabela(data.produtividade, data.total_paletes);
+                } else {
+                    mostrarErro(data.error || 'Erro ao carregar dados');
+                }
+            } catch (error) {
+                mostrarErro('Erro ao conectar com o servidor: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function atualizarEstatisticas(data) {
+            document.getElementById('stat-total-paletes').textContent = data.total_paletes.toLocaleString('pt-BR');
+            document.getElementById('stat-total-operadores').textContent = data.total_operadores;
+        }
+
+        function atualizarTabela(produtividade, totalPaletes) {
+            const tbody = document.getElementById('tbody-produtividade');
+            
+            if (!produtividade || produtividade.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Nenhum dado encontrado</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            produtividade.forEach((item, index) => {
+                const percentual = ((item.PALETES_BIPADOS / totalPaletes) * 100).toFixed(2);
+                const tr = document.createElement('tr');
+                const posicao = index + 1;
+                
+                // Adicionar atributo data-turno para filtro
+                tr.setAttribute('data-turno', item.TURNO || 'N/A');
+                
+                // Adicionar classes especiais para top 3
+                if (posicao === 1) {
+                    tr.classList.add('rank-1');
+                } else if (posicao === 2) {
+                    tr.classList.add('rank-2');
+                } else if (posicao === 3) {
+                    tr.classList.add('rank-3');
+                }
+                
+                // Ícones de medalha para top 3
+                let medalIcon = '';
+                if (posicao === 1) {
+                    medalIcon = '<i class="fas fa-trophy medal-icon medal-gold"></i>';
+                } else if (posicao === 2) {
+                    medalIcon = '<i class="fas fa-medal medal-icon medal-silver"></i>';
+                } else if (posicao === 3) {
+                    medalIcon = '<i class="fas fa-medal medal-icon medal-bronze"></i>';
+                }
+                
+                tr.innerHTML = `
+                    <td style="font-weight: 600;">
+                        <span class="rank-position">${medalIcon}${posicao}º</span>
+                    </td>
+                    <td style="font-weight: ${posicao <= 3 ? '600' : '400'};">${item.MIS_OPER}</td>
+                    <td>${item.NOME || 'N/A'}</td>
+                    <td>${item.TURNO || 'N/A'}</td>
+                    <td style="font-weight: 600; color: var(--primary-color);">${item.PALETES_BIPADOS.toLocaleString('pt-BR')}</td>
+                    <td>${percentual}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function filtrarPorTurno(turno) {
+            const tbody = document.getElementById('tbody-produtividade');
+            const linhas = tbody.getElementsByTagName('tr');
+            
+            // Atualizar estilo dos botões
+            document.getElementById('btn-turno-todos').style.background = turno === 'TODOS' ? 'var(--primary-color)' : '#6c757d';
+            document.getElementById('btn-turno-1').style.background = turno === '1' ? 'var(--primary-color)' : '#6c757d';
+            document.getElementById('btn-turno-2').style.background = turno === '2' ? 'var(--primary-color)' : '#6c757d';
+            document.getElementById('btn-turno-3').style.background = turno === '3' ? 'var(--primary-color)' : '#6c757d';
+            
+            // Primeiro, filtrar e remover classes antigas
+            let linhasVisiveis = [];
+            for (let i = 0; i < linhas.length; i++) {
+                const linha = linhas[i];
+                const turnoLinha = linha.getAttribute('data-turno');
+                
+                // Remover classes de rank antigas
+                linha.classList.remove('rank-1', 'rank-2', 'rank-3');
+                
+                if (turno === 'TODOS' || turnoLinha === turno) {
+                    linha.style.display = '';
+                    linhasVisiveis.push(linha);
+                } else {
+                    linha.style.display = 'none';
+                }
+            }
+            
+            // Recalcular posições e aplicar top 3 nas linhas visíveis
+            linhasVisiveis.forEach((linha, index) => {
+                const posicao = index + 1;
+                const celulaPosicao = linha.cells[0];
+                
+                // Aplicar classes de rank para top 3
+                if (posicao === 1) {
+                    linha.classList.add('rank-1');
+                    celulaPosicao.innerHTML = '<span class="rank-position"><i class="fas fa-trophy medal-icon medal-gold"></i>' + posicao + 'º</span>';
+                } else if (posicao === 2) {
+                    linha.classList.add('rank-2');
+                    celulaPosicao.innerHTML = '<span class="rank-position"><i class="fas fa-medal medal-icon medal-silver"></i>' + posicao + 'º</span>';
+                } else if (posicao === 3) {
+                    linha.classList.add('rank-3');
+                    celulaPosicao.innerHTML = '<span class="rank-position"><i class="fas fa-medal medal-icon medal-bronze"></i>' + posicao + 'º</span>';
+                } else {
+                    celulaPosicao.innerHTML = '<span class="rank-position">' + posicao + 'º</span>';
+                }
+            });
+        }
+
+        function mostrarErro(mensagem) {
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i> ${mensagem}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

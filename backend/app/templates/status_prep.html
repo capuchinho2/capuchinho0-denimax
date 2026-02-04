@@ -63,6 +63,19 @@
                  Rastreabilidade
                </a>
              </li>
+             
+             <!-- Menu Dropdown Produtividade -->
+             <li class="nav-item-dropdown">
+               <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)">
+                 <i class="fas fa-chart-line"></i>Produtividade<i class="fas fa-chevron-down"></i>
+               </button>
+               <ul class="nav-submenu">
+                 <li><a href="/produtividade-operador" class="nav-submenu-link"><i class="fas fa-user-hard-hat"></i>Produtividade Operador</a></li>
+                 <li><a href="/produtividade-carregador" class="nav-submenu-link"><i class="fas fa-truck-loading"></i>Produtividade Carregador</a></li>
+                 <li><a href="/produtividade-preparador" class="nav-submenu-link"><i class="fas fa-boxes"></i>Produtividade Preparador</a></li>
+               </ul>
+             </li>
+
              <li class="nav-item">
                <a href="/configuracoes" class="nav-link">
                  <i class="fas fa-cogs"></i>
@@ -165,11 +178,11 @@
           border: 1px solid rgba(0, 212, 255, 0.2);
         ">
           <div style="flex: 1; text-align: center;">
-            <div style="font-size: 2rem; font-weight: 700; color: var(--danger-color);">
+            <div style="font-size: 2rem; font-weight: 700; color: #ff6b6b;">
               <span id="paletesNaoLidos">0</span>
             </div>
             <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
-              <i class="fas fa-exclamation-triangle"></i> Paletes não lidos 
+              <i class="fas fa-exclamation-triangle"></i> Paletes não iniciados
             </div>
           </div>
           <div style="flex: 1; text-align: center;">
@@ -177,7 +190,15 @@
               <span id="paletesLidos">0</span>
             </div>
             <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
-              <i class="fas fa-check-circle"></i> Paletes com leitura 
+              <i class="fas fa-check-circle"></i> Paletes em andamento
+            </div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #ffa500;">
+              <span id="paletesSemPreparador">0</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
+              <i class="fas fa-user-slash"></i> Sem preparador
             </div>
           </div>
         </div>
@@ -188,13 +209,14 @@
                 <th style="padding: 12px; text-align: left; color: var(--text-primary);">Viagem</th>
                 <th style="padding: 12px; text-align: left; color: var(--text-primary);">Palete</th>
                 <th style="padding: 12px; text-align: left; color: var(--text-primary);">Prep</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Nome</th>
                 <th style="padding: 12px; text-align: left; color: var(--text-primary);">Lido</th>
                 <th style="padding: 12px; text-align: left; color: var(--text-primary);">Total</th>
               </tr>
             </thead>
             <tbody id="corpoTabelaPendentes">
               <tr>
-                <td colspan="5" style="padding: 20px; text-align: center; color: var(--text-secondary);">Selecione um período para visualizar</td>
+                <td colspan="6" style="padding: 20px; text-align: center; color: var(--text-secondary);">Selecione um período para visualizar</td>
               </tr>
             </tbody>
           </table>
@@ -253,7 +275,82 @@
             </thead>
             <tbody id="corpoTabelaPreparados">
               <tr>
-                <td colspan="2" style="padding: 20px; text-align: center; color: var(--text-secondary);">Selecione um período para visualizar</td>
+                <td colspan="3" style="padding: 20px; text-align: center; color: var(--text-secondary);">Selecione um período para visualizar</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Card de Conferência -->
+      <div class="metric-card status_prep_Busca_data" style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="color: var(--text-primary); margin: 0;">
+            <i class="fas fa-clipboard-check"></i> Conferência
+          </h3>
+        </div>
+        <div id="resumoPaletesConferencia" style="
+          display: flex;
+          gap: 1.5rem;
+          margin-bottom: 1rem;
+          padding: 1rem;
+          background: rgba(52, 152, 219, 0.08);
+          border-radius: 10px;
+          border: 1px solid rgba(52, 152, 219, 0.2);
+        ">
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #3498db;">
+              <span id="paletesConferencia">0</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem;">
+              <i class="fas fa-clipboard-check"></i> Paletes em conferência
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem;">
+          <button id="btnBuscarConferencia" onclick="buscarConferencia()" style="
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;">
+            <i class="fas fa-search"></i>
+            <span>Buscar</span>
+          </button>
+          <button id="toggleTabelaConferencia" onclick="toggleTabelaConferencia()" style="
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;">
+            <i class="fas fa-eye"></i>
+            <span id="textoBotaoToggleConferencia">Mostrar</span>
+          </button>
+        </div>
+        <div id="containerTabelaConferencia" style="overflow-x: auto; display: none;">
+          <table id="tabelaPaletesConferencia" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--dark-bg); border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Viagem</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Palete</th>
+                <th style="padding: 12px; text-align: left; color: var(--text-primary);">Status</th>
+              </tr>
+            </thead>
+            <tbody id="corpoTabelaConferencia">
+              <tr>
+                <td colspan="3" style="padding: 20px; text-align: center; color: var(--text-secondary);">Selecione um período para visualizar</td>
               </tr>
             </tbody>
           </table>
@@ -304,23 +401,83 @@ function preencherDataHoje() {
         }
       }
 
+      function toggleTabelaConferencia() {
+        const container = document.getElementById('containerTabelaConferencia');
+        const botao = document.getElementById('toggleTabelaConferencia');
+        const texto = document.getElementById('textoBotaoToggleConferencia');
+        const icone = botao.querySelector('i');
+        if (container.style.display === 'none') {
+          container.style.display = 'block';
+          texto.textContent = 'Ocultar';
+          icone.className = 'fas fa-eye-slash';
+        } else {
+          container.style.display = 'none';
+          texto.textContent = 'Mostrar';
+          icone.className = 'fas fa-eye';
+        }
+      }
+
+      async function buscarConferencia() {
+        const dataInicial = document.getElementById('dataInicialPrep').value;
+        const dataFinal = document.getElementById('dataFinalPrep').value;
+        const preparador = document.getElementById('nomePreparador').value.trim();
+        const btnBuscar = document.getElementById('btnBuscarConferencia');
+
+        if (!dataInicial || !dataFinal) {
+          alert('Por favor, selecione as datas inicial e final.');
+          return;
+        }
+
+        // Desabilitar botão durante busca
+        btnBuscar.disabled = true;
+        btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+
+        try {
+          // Adicionar parâmetro preparador na URL
+          let url = `/api/status-prep/conferencia?data_inicial=${dataInicial}&data_final=${dataFinal}`;
+          if (preparador) {
+            url += `&preparador=${encodeURIComponent(preparador)}`;
+          }
+          
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            // Atualizar contador
+            document.getElementById('paletesConferencia').textContent = data.total || 0;
+
+            // Atualizar tabela
+            const tbody = document.getElementById('corpoTabelaConferencia');
+            tbody.innerHTML = '';
+
+            if (data.paletes && data.paletes.length > 0) {
+              data.paletes.forEach(palete => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid var(--border-color)';
+                row.innerHTML = `
+                  <td style="padding: 12px; color: var(--text-primary);">${palete.viagem}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${palete.palete}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${palete.status || '-'}</td>
+                `;
+                tbody.appendChild(row);
+              });
+            } else {
+              tbody.innerHTML = '<tr><td colspan="3" style="padding: 20px; text-align: center; color: var(--text-secondary);">Nenhum palete em conferência encontrado</td></tr>';
+            }
+          } else {
+            alert('Erro ao buscar dados: ' + (data.error || 'Erro desconhecido'));
+          }
+        } catch (error) {
+          console.error('Erro ao buscar conferência:', error);
+          alert('Erro ao buscar dados de conferência');
+        } finally {
+          // Reabilitar botão
+          btnBuscar.disabled = false;
+          btnBuscar.innerHTML = '<i class="fas fa-search"></i> <span>Buscar</span>';
+        }
+      }
+
       async function buscarDados() {
-                // Preencher tabela de preparados imediatamente após buscar
-                const tbodyPreparados = document.getElementById('corpoTabelaPreparados');
-                tbodyPreparados.innerHTML = '';
-                if (window.ultimosPreparados && window.ultimosPreparados.length > 0) {
-                  window.ultimosPreparados.forEach(palete => {
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid var(--border-color)';
-                    tr.innerHTML = `
-                      <td style="padding: 12px; color: var(--text-primary);">${palete.palete}</td>
-                      <td style="padding: 12px; color: var(--text-primary);">${palete.prep}</td>
-                    `;
-                    tbodyPreparados.appendChild(tr);
-                  });
-                } else {
-                  tbodyPreparados.innerHTML = '<tr><td colspan="2" style="padding: 20px; text-align: center; color: var(--text-secondary);">Nenhum palete preparado encontrado</td></tr>';
-                }
         const dataInicial = document.getElementById('dataInicialPrep').value;
         const dataFinal = document.getElementById('dataFinalPrep').value;
         const preparador = document.getElementById('nomePreparador').value;
@@ -344,50 +501,36 @@ function preencherDataHoje() {
             // Atualizar totais
             document.getElementById('totalPreparados').textContent = data.preparados || 0;
             document.getElementById('totalIncompletos').textContent = data.incompletos || 0;
-              document.getElementById('paletesPreparados').textContent = data.preparados || 0; // Sincronizar com paletes preparados
-            if (preparador) {
-              window.ultimosPreparados = Array.isArray(data.viagens_preparadas) ? data.viagens_preparadas : [];
-            } else {
-              window.ultimosPreparados = [];
-            }
+            
+            // Atualizar resumo de paletes com dados do backend (sempre, independente de haver viagens)
+            document.getElementById('paletesNaoLidos').textContent = data.paletes_nao_iniciados || 0;
+            document.getElementById('paletesLidos').textContent = data.paletes_em_andamento || 0;
+            document.getElementById('paletesSemPreparador').textContent = data.paletes_sem_preparador || 0;
+            
+            console.log('[DEBUG] Paletes não iniciados:', data.paletes_nao_iniciados);
+            console.log('[DEBUG] Paletes em andamento:', data.paletes_em_andamento);
+            console.log('[DEBUG] Paletes sem preparador:', data.paletes_sem_preparador);
 
             // Atualizar tabela de viagens pendentes
             const tbody = document.getElementById('corpoTabelaPendentes');
             tbody.innerHTML = '';
 
             if (data.viagens_pendentes && data.viagens_pendentes.length > 0) {
-              let paletesNaoLidos = 0;
-              let paletesLidos = 0;
-
               data.viagens_pendentes.forEach(viagem => {
-                // Contar paletes por valor de "lido"
-                const valorLido = parseInt(viagem.lido) || 0;
-                if (valorLido === 0) {
-                  paletesNaoLidos++;
-                } else {
-                  paletesLidos++;
-                }
-
                 const tr = document.createElement('tr');
                 tr.style.borderBottom = '1px solid var(--border-color)';
                 tr.innerHTML = `
                   <td style="padding: 12px; color: var(--text-primary);">${viagem.viagem}</td>
                   <td style="padding: 12px; color: var(--text-primary);">${viagem.palete}</td>
                   <td style="padding: 12px; color: var(--text-primary);">${viagem.prep}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${viagem.nome || 'N/A'}</td>
                   <td style="padding: 12px; color: var(--text-primary);">${viagem.lido}</td>
                   <td style="padding: 12px; color: var(--text-primary);">${viagem.total}</td>
                 `;
                 tbody.appendChild(tr);
               });
-
-              // Atualizar resumo de paletes
-              document.getElementById('paletesNaoLidos').textContent = paletesNaoLidos;
-              document.getElementById('paletesLidos').textContent = paletesLidos;
             } else {
-              tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-secondary);">Nenhuma viagem pendente encontrada</td></tr>';
-              // Zerar contadores
-              document.getElementById('paletesNaoLidos').textContent = 0;
-              document.getElementById('paletesLidos').textContent = 0;
+              tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--text-secondary);">Nenhuma viagem pendente encontrada</td></tr>';
             }
 
             // Ocultar a tabela após atualizar os dados
@@ -399,6 +542,39 @@ function preencherDataHoje() {
             container.style.display = 'none';
             texto.textContent = 'Mostrar';
             icone.className = 'fas fa-eye';
+
+            // Atualizar tabela de paletes preparados (seguindo mesma lógica de viagens pendentes)
+            const tbodyPreparados = document.getElementById('corpoTabelaPreparados');
+            tbodyPreparados.innerHTML = '';
+
+            if (data.viagens_preparadas && data.viagens_preparadas.length > 0) {
+              document.getElementById('paletesPreparados').textContent = data.viagens_preparadas.length;
+              
+              data.viagens_preparadas.forEach(palete => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--border-color)';
+                tr.innerHTML = `
+                  <td style="padding: 12px; color: var(--text-primary);">${palete.viagem}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${palete.palete}</td>
+                  <td style="padding: 12px; color: var(--text-primary);">${palete.prep}</td>
+                `;
+                tbodyPreparados.appendChild(tr);
+              });
+            } else {
+              tbodyPreparados.innerHTML = '<tr><td colspan="3" style="padding: 20px; text-align: center; color: var(--text-secondary);">Nenhum palete preparado encontrado</td></tr>';
+              document.getElementById('paletesPreparados').textContent = 0;
+            }
+
+            // Ocultar tabela de preparados após atualizar (mesma lógica de pendentes)
+            const containerPreparados = document.getElementById('containerTabelaPreparados');
+            const botaoPreparados = document.getElementById('toggleTabelaPreparados');
+            const textoPreparados = document.getElementById('textoBotaoTogglePreparados');
+            const iconePreparados = botaoPreparados.querySelector('i');
+            
+            containerPreparados.style.display = 'none';
+            textoPreparados.textContent = 'Mostrar';
+            iconePreparados.className = 'fas fa-eye';
+
           } else {
             alert('Erro ao buscar dados: ' + (data.error || 'Erro desconhecido'));
           }
@@ -453,4 +629,10 @@ function preencherDataHoje() {
         dataFinalPrep.addEventListener('keypress', handleEnterKey);
         nomePreparador.addEventListener('keypress', handleEnterKey);
       });
+      
+      function toggleDropdown(button) {
+        const submenu = button.nextElementSibling;
+        button.classList.toggle('active');
+        submenu.classList.toggle('show');
+      }
     </script>
