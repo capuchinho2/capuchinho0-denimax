@@ -1,5 +1,5 @@
 # Use uma imagem Python oficial
-FROM python:3.11.7-slim
+FROM python:3.11.9-slim
 
 # Instalar dependências do sistema (drivers ODBC)
 RUN apt-get update && \
