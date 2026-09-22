@@ -2,9 +2,11 @@ wheel
 Flask==3.0.0
 Flask-CORS==4.0.0
 pyodbc==5.0.1
-pandas==2.1.4
+numpy==2.1.0
+pandas==2.2.0
 openpyxl==3.1.2
+xlsxwriter
 python-dateutil==2.8.2
 gunicorn
 requests
-beautifulsoup4
+beautifulsoup4 

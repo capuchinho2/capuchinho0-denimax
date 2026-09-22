@@ -1,13 +1,163 @@
 from flask import Blueprint, jsonify, request, send_file
+import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
+from pathlib import Path
+from zoneinfo import ZoneInfo
 import pandas as pd
 import pyodbc
+import requests
 from io import BytesIO
 from ..utils.db_utils import get_db_connection
 from ..utils.logic import processar_het, processar_hom, processar_pedidos_x7, clear_cache, cache_store, cache_timestamps, obter_status_prep, cache_with_timeout
+from ..utils.parte_coleta import coletar_registros, registros_para_checklists
 
 api_bp = Blueprint('api', __name__)
+
+TELEGRAM_API_URL = "https://api.telegram.org"
+
+
+def carregar_configuracao_telegram():
+    arquivo_env = Path(__file__).resolve().parent.parent / "utils" / ".env"
+    if not arquivo_env.exists():
+        return
+    for linha in arquivo_env.read_text(encoding="utf-8").splitlines():
+        linha = linha.strip()
+        if not linha or linha.startswith("#") or "=" not in linha:
+            continue
+        chave, valor = linha.split("=", 1)
+        valor = valor.strip().strip('"').strip("'")
+        os.environ.setdefault(chave.strip(), valor)
+
+
+carregar_configuracao_telegram()
+
+
+def enviar_mensagem_telegram(mensagem, chat_id=None):
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    destino = chat_id or os.getenv("TELEGRAM_CHAT_ID", "")
+    if not token:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN não configurado.")
+    if not destino:
+        raise RuntimeError("TELEGRAM_CHAT_ID não configurado.")
+
+    blocos = mensagem.split("\n\n")
+    partes = []
+    parte_atual = ""
+    for bloco in blocos:
+        candidato = f"{parte_atual}\n\n{bloco}" if parte_atual else bloco
+        if len(candidato) <= 4096:
+            parte_atual = candidato
+        else:
+            if parte_atual:
+                partes.append(parte_atual)
+            while len(bloco) > 4096:
+                partes.append(bloco[:4096])
+                bloco = bloco[4096:]
+            parte_atual = bloco
+    if parte_atual:
+        partes.append(parte_atual)
+
+    resultados = []
+    for parte in partes:
+        resposta = requests.post(
+            f"{TELEGRAM_API_URL}/bot{token}/sendMessage",
+            json={"chat_id": destino, "text": parte},
+            timeout=15,
+        )
+        try:
+            resultado = resposta.json()
+        except ValueError:
+            resultado = {}
+        if not resposta.ok or not resultado.get("ok"):
+            descricao = resultado.get("description", resposta.text or "Erro sem descrição")
+            raise RuntimeError(f"Telegram recusou a mensagem: {descricao}")
+        resultados.append(resultado.get("result", {}))
+    return resultados
+
+
+@api_bp.route('/api/checklist/coletar', methods=['GET'])
+def coletar_checklists_api():
+    try:
+        hoje = datetime.now().strftime('%d/%m/%Y')
+        data_inicial = request.args.get('data_inicial', hoje)
+        data_final = request.args.get('data_final', hoje)
+        status = request.args.get('status', 'Todos')
+        registros = coletar_registros(
+            status_escolhido=status,
+            data_inicial=data_inicial,
+            data_final=data_final,
+        )
+        return jsonify({
+            "success": True,
+            "total": len(registros),
+            "dados": registros_para_checklists(registros),
+        })
+    except Exception as erro:
+        return jsonify({"success": False, "error": str(erro)}), 502
+
+
+@api_bp.route('/api/checklist/coletar-auto', methods=['GET'])
+def coletar_checklists_auto_api():
+    try:
+        agora = datetime.now(ZoneInfo("America/Sao_Paulo"))
+        ontem = (agora - timedelta(days=1)).strftime('%d/%m/%Y')
+        hoje = agora.strftime('%d/%m/%Y')
+        registros = coletar_registros(
+            status_escolhido="Todos",
+            data_inicial=ontem,
+            data_final=hoje,
+        )
+        dados = registros_para_checklists(registros)
+        pendentes = [
+            item for item in dados
+            if str(item.get('status', '')).strip().lower() in {'criado', 'em andamento'}
+        ]
+        return jsonify({
+            "success": True,
+            "total": len(pendentes),
+            "periodo": {"data_inicial": ontem, "data_final": hoje},
+            "dados": pendentes,
+        })
+    except Exception as erro:
+        return jsonify({"success": False, "error": str(erro)}), 502
+
+
+@api_bp.route('/api/checklist/enviar-telegram', methods=['POST'])
+def enviar_checklists_telegram_api():
+    try:
+        dados = request.get_json(silent=True) or {}
+        checklists = dados.get('checklists', [])
+        if not checklists:
+            return jsonify({"success": False, "error": "Nenhum checklist informado."}), 400
+
+        responsavel = dados.get('responsavel', 'Daniel Capuchinho')
+        linhas = [
+            f"Olá, {responsavel}!",
+            "Existem checklists pendentes:",
+            "",
+        ]
+        for checklist in checklists:
+            linhas.append(
+                "------------------------------\n"
+                f"Nome: {checklist.get('responsavel', '') or 'Não informado'}\n"
+                f"Checklist: {checklist.get('checklist', 'Checklist')}\n"
+                f"N° Equip: {checklist.get('informacoes', '') or 'Não informado'}\n"
+                f"Status: {checklist.get('status', '') or 'Não informado'}\n"
+                f"Data: {checklist.get('data_hora', '') or 'Não informado'}\n"
+                "------------------------------"
+            )
+        linhas.extend(["", "Por favor, verifique e finalize os checklists."])
+        mensagem = "\n".join(linhas)
+        telegram = enviar_mensagem_telegram(mensagem, dados.get('chat_id'))
+        return jsonify({
+            "success": True,
+            "responsavel": responsavel,
+            "mensagem": mensagem,
+            "telegram": telegram,
+        })
+    except Exception as erro:
+        return jsonify({"success": False, "error": str(erro)}), 503
 
 @api_bp.route('/api/health', methods=['GET'])
 def health():

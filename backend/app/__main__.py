@@ -11,6 +11,9 @@ from .routes.configuracoes import configuracoes_bp
 from .routes.produtividade_operador import produtividade_operador_bp
 from .routes.produtividade_carregador import produtividade_carregador_bp
 from .routes.produtividade_preparador import produtividade_preparador_bp
+from .routes.reapro import reapro_bp
+from .routes.configuracoes import checklist_bp
+from .utils.parte_coleta import iniciar_automacao_background
 
 def create_app():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,10 +34,13 @@ def create_app():
     app.register_blueprint(produtividade_operador_bp)
     app.register_blueprint(produtividade_carregador_bp)
     app.register_blueprint(produtividade_preparador_bp)
+    app.register_blueprint(reapro_bp)
+    app.register_blueprint(checklist_bp)
 
     return app
 
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    iniciar_automacao_background()
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
