@@ -30,28 +30,6 @@ def checklist_page():
                         <div class="logo-subtitle" style="color: var(--text-muted); font-size: 0.8rem;">Sistema de Produção v2.1</div>
                     </div>
                     <nav><ul class="nav-menu">
-                        <li class="nav-item"><a href="/" class="nav-link"><i class="fas fa-home"></i>Início</a></li>
-                        <li class="nav-item"><a href="/preparacao" class="nav-link"><i class="fas fa-box-open"></i>Preparação</a></li>
-                        <li class="nav-item"><a href="/conferencia" class="nav-link"><i class="fas fa-clipboard-check"></i>Conferência</a></li>
-                        <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
-                        <li class="nav-item"><a href="/status-prep" class="nav-link"><i class="fas fa-clipboard-list"></i>STATUS_PREP</a></li>
-                        <li class="nav-item"><a href="/rastreabilidade" class="nav-link"><i class="fas fa-search-location"></i>Rastreabilidade</a></li>
-                        <li class="nav-item-dropdown">
-                            <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)"><i class="fas fa-recycle"></i>Reapro<i class="fas fa-chevron-down"></i></button>
-                            <ul class="nav-submenu">
-                                <li><a href="/reapro" class="nav-submenu-link"><i class="fas fa-warehouse"></i>Estoque Picking</a></li>
-                                <li><a href="/reapro-pendente" class="nav-submenu-link"><i class="fas fa-box"></i>Reapro Pendente</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item-dropdown">
-                            <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)"><i class="fas fa-chart-line"></i>Produtividade<i class="fas fa-chevron-down"></i></button>
-                            <ul class="nav-submenu">
-                                <li><a href="/produtividade-operador" class="nav-submenu-link"><i class="fas fa-user-hard-hat"></i>Produtividade Operador</a></li>
-                                <li><a href="/produtividade-carregador" class="nav-submenu-link"><i class="fas fa-truck-loading"></i>Produtividade Carregador</a></li>
-                                <li><a href="/produtividade-preparador" class="nav-submenu-link"><i class="fas fa-boxes"></i>Produtividade Preparador</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item"><a href="/configuracoes" class="nav-link"><i class="fas fa-cogs"></i>Configurações</a></li>
                         <li class="nav-item"><a href="/checklist" class="nav-link active"><i class="fas fa-list-check"></i>Checklist</a></li>
                     </ul></nav>
                 </aside>
@@ -112,6 +90,7 @@ def checklist_page():
                                 <button class="btn btn-turno" data-turno="TURNO 1" type="button"><i class="fas fa-sun"></i> Turno 1</button>
                                 <button class="btn btn-turno" data-turno="TURNO 2" type="button"><i class="fas fa-cloud-sun"></i> Turno 2</button>
                                 <button class="btn btn-turno" data-turno="TURNO 3" type="button"><i class="fas fa-moon"></i> Turno 3</button>
+                                <button id="btnLimparFiltrosChecklists" class="btn btn-limpar-filtros" type="button" title="Limpar filtros" aria-label="Limpar filtros"><i class="fas fa-eraser"></i></button>
                             </div>
                             <button id="btnCarregarChecklists" class="btn btn-primary" type="button"><i class="fas fa-sync-alt"></i> Carregar checklists</button>
                             <button id="btnModoAutomacao" class="btn btn-modo-automacao" type="button"><i id="iconeModoAutomacao" class="fas fa-hand-pointer"></i> <span id="textoModoAutomacao">Manual</span></button>
@@ -142,6 +121,7 @@ def checklist_page():
                                 const mensagem = document.getElementById('checklistMensagem');
                                 const tabela = document.getElementById('checklistTabela');
                                 const btnCarregar = document.getElementById('btnCarregarChecklists');
+                                const btnLimparFiltros = document.getElementById('btnLimparFiltrosChecklists');
                                 const btnModoAutomacao = document.getElementById('btnModoAutomacao');
                                 const textoModoAutomacao = document.getElementById('textoModoAutomacao');
                                 const iconeModoAutomacao = document.getElementById('iconeModoAutomacao');
@@ -191,6 +171,12 @@ def checklist_page():
                                     turnoSelecionado = 'Todos';
                                     botoesTurno.forEach(item => item.classList.remove('active'));
                                 }
+
+                                btnLimparFiltros.addEventListener('click', function() {
+                                    limparFiltrosManuais();
+                                    mensagem.textContent = checklistsCarregados.length + ' checklist(s) encontrado(s).';
+                                    desenharTabela();
+                                });
 
                                 responsavelBotao.addEventListener('click', function() {
                                     responsavelWrapper.classList.toggle('open');

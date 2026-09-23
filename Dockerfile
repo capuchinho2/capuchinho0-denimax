@@ -27,4 +27,4 @@ ENV PYTHONPATH=/app/backend:$PYTHONPATH
 EXPOSE 8080
 
 # Comando para iniciar a aplicação
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8080} backend.app.__main__:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8080} backend.app.checklist_main:app"]
