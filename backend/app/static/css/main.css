@@ -1093,6 +1093,23 @@ body {
       box-shadow: 0 5px 15px rgba(0, 212, 255, 0.25);
     }
 
+    .btn-limpar-filtros {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-limpar-filtros:hover,
+    .btn-limpar-filtros:focus {
+      background: rgba(255, 71, 87, 0.14);
+      border-color: var(--danger-color);
+      color: var(--danger-color);
+      outline: none;
+    }
+
     .btn-resumo-nomes {
       background: linear-gradient(135deg, #9b59b6, #6c3483);
       color: #ffffff;

@@ -14,6 +14,7 @@ import requests
 
 HORARIOS_AUTOMACAO = ((6, 0), (14, 30), (23, 0))
 STATUS_PENDENTES = {"CRIADO", "EM ANDAMENTO"}
+TAMANHO_BLOCO_BUSCA_DIAS = 7
 TELEGRAM_API_URL = "https://api.telegram.org"
 _automacao_iniciada = False
 FUSO_HORARIO = ZoneInfo("America/Sao_Paulo")
@@ -112,6 +113,11 @@ def coletar_registros(status_escolhido="Todos", data_inicial=None, data_final=No
 	if data_final is None:
 		data_final = datetime.now().strftime("%d/%m/%Y")
 
+	inicio = datetime.strptime(data_inicial, "%d/%m/%Y")
+	fim = datetime.strptime(data_final, "%d/%m/%Y")
+	if inicio > fim:
+		raise ValueError("A data inicial não pode ser posterior à data final.")
+
 	sessao = requests.Session()
 	dados_login = {
 		"nmlogin": usuario,
@@ -122,43 +128,45 @@ def coletar_registros(status_escolhido="Todos", data_inicial=None, data_final=No
 	resposta = sessao.post(f"{url}default.php", data=dados_login, verify=False, timeout=10)
 	resposta.raise_for_status()
 
-	filtros = {
-		"datai": data_inicial,
-		"dataf": data_final,
-		"fflstatus": "",
-		"fidresposta": "",
-		"fnmchecklist": "",
-		"freferencia": "",
-		"acao": "L",
-		"ord": "dtcriacao desc",
-		"direcao": "",
-		"idresposta": "",
-	}
-	resposta = sessao.post(
-		f"{url}preenchimento.php",
-		data=filtros,
-		headers={"Referer": f"{url}home.php"},
-		verify=False,
-		timeout=10,
-	)
-	resposta.raise_for_status()
-	registros = extrair_registros(resposta.text)
-
-	paginas = {int(numero) for numero in re.findall(r"tpg\('([0-9]+)'\)", resposta.text)}
-	paginas.add(1)
-	for pagina in sorted(paginas):
-		if pagina == 1:
-			continue
-		dados_pagina = {**filtros, "paginaatual": str(pagina)}
-		resposta_pagina = sessao.post(
+	registros = []
+	data_bloco = inicio
+	while data_bloco <= fim:
+		fim_bloco = min(data_bloco + timedelta(days=TAMANHO_BLOCO_BUSCA_DIAS - 1), fim)
+		filtros = {
+			"datai": data_bloco.strftime("%d/%m/%Y"),
+			"dataf": fim_bloco.strftime("%d/%m/%Y"),
+			"fflstatus": "",
+			"fidresposta": "",
+			"fnmchecklist": "",
+			"freferencia": "",
+			"acao": "L",
+			"ord": "dtcriacao desc",
+			"direcao": "",
+			"idresposta": "",
+		}
+		resposta = sessao.post(
 			f"{url}preenchimento.php",
-			data=dados_pagina,
-			headers={"Referer": f"{url}preenchimento.php"},
+			data=filtros,
+			headers={"Referer": f"{url}home.php"},
 			verify=False,
 			timeout=10,
 		)
-		resposta_pagina.raise_for_status()
-		registros.extend(extrair_registros(resposta_pagina.text))
+		resposta.raise_for_status()
+		registros.extend(extrair_registros(resposta.text))
+
+		paginas = {int(numero) for numero in re.findall(r"tpg\\('([0-9]+)'\\)", resposta.text)}
+		for pagina in sorted(paginas):
+			dados_pagina = {**filtros, "paginaatual": str(pagina)}
+			resposta_pagina = sessao.post(
+				f"{url}preenchimento.php",
+				data=dados_pagina,
+				headers={"Referer": f"{url}preenchimento.php"},
+				verify=False,
+				timeout=10,
+			)
+			resposta_pagina.raise_for_status()
+			registros.extend(extrair_registros(resposta_pagina.text))
+		data_bloco = fim_bloco + timedelta(days=1)
 
 	registros_por_codigo = {registro[0]: registro for registro in registros}
 	registros = list(registros_por_codigo.values())

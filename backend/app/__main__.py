@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask
 from flask_cors import CORS
 from .routes.conferencia import conferencia_bp
@@ -13,7 +14,12 @@ from .routes.produtividade_carregador import produtividade_carregador_bp
 from .routes.produtividade_preparador import produtividade_preparador_bp
 from .routes.reapro import reapro_bp
 from .routes.configuracoes import checklist_bp
-from .utils.parte_coleta import iniciar_automacao_background
+from .utils.parte_coleta import (
+    agora_local,
+    carregar_configuracao_telegram,
+    executar_envio_automatico,
+    iniciar_automacao_background,
+)
 
 def create_app():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,5 +48,11 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
+    if '--enviar-agora' in sys.argv:
+        carregar_configuracao_telegram()
+        executar_envio_automatico(agora_local())
+        sys.exit(0)
     iniciar_automacao_background()
     app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
+else:
+    iniciar_automacao_background()
