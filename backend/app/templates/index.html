@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/denimax.ico') }}">
   <title>Denimax - Sistema de Produção</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -156,6 +157,14 @@
         <p class="home-card-description">Sistema de conferência e validação de produtos</p>
       </a>
 
+      <a href="/reapro-pendente" class="home-card">
+        <div class="home-card-icon" style="background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%); color: white;">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <h2 class="home-card-title">Reapro</h2>
+        <p class="home-card-description">Gerencie reposições, estoque picking e reaprovações</p>
+      </a>
+
       <a href="http://10.215.15.81:5000/produtividade-preparador" class="home-card">
         <div class="home-card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
           <i class="fas fa-chart-line"></i>
@@ -192,6 +201,13 @@
           </div>
           <h2 class="home-card-title">Configurações</h2>
           <p class="home-card-description">Gerencie preferências, usuários e integrações do sistema</p>
+        </a>
+        <a href="/checklist" class="home-card">
+          <div class="home-card-icon" style="background: linear-gradient(135deg, #00d4ff 0%, #0066cc 100%); color: white;">
+            <i class="fas fa-list-check"></i>
+          </div>
+          <h2 class="home-card-title">Checklist</h2>
+          <p class="home-card-description">Consulte e envie os checklists operacionais do turno</p>
         </a>
     </div>
   </div>
